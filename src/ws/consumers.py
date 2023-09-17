@@ -2,6 +2,8 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from src.settings import CHANNEL_LAYERS
+import django
+django.setup()
 from src.models import Project
 
 import json

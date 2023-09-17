@@ -2,3 +2,7 @@ venv/
 __pycache__/
 .env
 db.sqlite3
+gunicorn.py
+restart.sh
+start.sh
+stop.sh

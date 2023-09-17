@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('id', models.CharField(default=src.models.hex_uuid, editable=False, max_length=100, primary_key=True, serialize=False)),
                 ('secret_key', models.CharField(default=src.models.hex_uuid, editable=False, max_length=100)),
                 ('name', models.CharField(max_length=100)),
-                ('description', models.TextField()),
+                ('description', models.TextField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='src.customer')),
