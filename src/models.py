@@ -37,8 +37,8 @@ class Project(models.Model):
     )
     secret_key = models.CharField(max_length=100, default=hex_uuid, editable=False)
     name = models.CharField(max_length=100)
-    owner = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    description = models.TextField(null=True, blank=True)
+    owner = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="projects")
+    description = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -47,3 +47,12 @@ class Project(models.Model):
     
     def __repr__(self) -> str:
         return f"{self.id} - {self.name}"
+
+    def _get_project_id_val(self, meta=None):
+        return self.id
+    
+    def _set_project_id_val(self, value):
+        self.id = value
+
+    project_id = property(_get_project_id_val, _set_project_id_val)
+    project_id.fget.short_description = "Project ID"

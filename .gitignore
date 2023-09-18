@@ -6,3 +6,5 @@ gunicorn.py
 restart.sh
 start.sh
 stop.sh
+dapne.log
+gunicorn.log
