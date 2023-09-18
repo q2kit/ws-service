@@ -11,12 +11,17 @@ class ProjectInline(admin.TabularInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "owner", "description", "project_id", "secret_key", "created_at", "updated_at")
+    sortable_by = ("name", "owner", "created_at", "updated_at")
+    list_display = ("name", "project_id", "secret_key", "owner", "description", "created_at", "updated_at")
     fields = ("name", "owner", "description", "project_id", "secret_key", ("created_at", "updated_at"))
     readonly_fields = ("owner", "project_id", "secret_key", "created_at", "updated_at")
-
+    search_fields = ("name", "owner__email", "id", "secret_key")
+    list_filter = ("owner",)
+    list_select_related = ("owner",)
 
 class CustomerAdmin(admin.ModelAdmin):
+    list_display = ("id", "email", "projects_count", "created_at", "updated_at")
+    search_fields = ("email", "id")
     inlines = [ProjectInline]
 
 

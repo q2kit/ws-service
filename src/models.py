@@ -26,6 +26,10 @@ class Customer(models.Model):
         self.password = hashlib.sha256(self.password.encode()).hexdigest()
         super().save(*args, **kwargs)
 
+    @property
+    def projects_count(self) -> int:
+        return self.projects.count()
+
 
 class Project(models.Model):
     id = models.CharField(
