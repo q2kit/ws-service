@@ -28,11 +28,11 @@ ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
 ChannelLayer.send_by_client_id = send_by_client_id
 
 
-class NotificationConsumer(AsyncWebsocketConsumer):
+class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.project_id = self.scope["url_route"]["kwargs"]["project_id"]
         token = self.scope["url_route"]["kwargs"]["token"]
-        
+
         try:
             # secret_key = Project.objects.get(id=self.project_id).secret_key
             secret_key = (await sync_to_async(Project.objects.get)(id=self.project_id)).secret_key
@@ -64,10 +64,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         if "receivers" in text_data_json: # send to specific user
             receivers = text_data_json["receivers"]
-            
+
             if not isinstance(receivers, list): # if receivers is not list
                 receivers = [receivers] # convert to list of one element
-            
+
             for recipient in receivers:
                 await self.channel_layer.send_by_client_id(
                     recipient,
