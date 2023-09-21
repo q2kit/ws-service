@@ -33,7 +33,7 @@ class ProjectInline(admin.TabularInline):
         if obj.created_at:
             now = timezone.now()
             created_at = now - obj.created_at
-            return format_html('<span class="short_time" title="{}">{}</span>', obj.created_at, calc_time(created_at))
+            return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
         else:
             return "-"
     created_at_display.short_description = "Created At"
@@ -61,7 +61,7 @@ class ProjectAdmin(admin.ModelAdmin):
     def created_at_display(self, obj):
         now = timezone.now()
         created_at = now - obj.created_at
-        return format_html('<span class="short_time" title="{}">{}</span>', obj.created_at, calc_time(created_at))
+        return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
     created_at_display.short_description = "Created At"
 
     def get_readonly_fields(self, request, obj=None):
@@ -80,6 +80,9 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ("id", "email", "projects_count", "created_at", "updated_at")
     search_fields = ("email", "id")
     inlines = [ProjectInline]
+    fields = ("email", "created_at", "updated_at")
+    readonly_fields = ("email", "created_at", "updated_at")
+    list_display_links = ("id", "email")
 
 
 admin.site.register(Customer, CustomerAdmin)

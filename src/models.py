@@ -21,7 +21,8 @@ class Customer(models.Model):
         return self.password == hashlib.sha256(password.encode()).hexdigest()
 
     def save(self, *args, **kwargs):
-        self.password = hashlib.sha256(self.password.encode()).hexdigest()
+        if not self.pk:
+            self.password = hashlib.sha256(self.password.encode()).hexdigest()
         super().save(*args, **kwargs)
 
     @property
