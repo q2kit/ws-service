@@ -9,7 +9,7 @@ admin.site.index_title = "Welcome to Websocket Service Portal"
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
     path('signup/', signup, name='signup'),
     path('signin/', signin, name='signin'),
     path('create-project/', create_project, name='create-project'),

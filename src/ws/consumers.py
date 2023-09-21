@@ -1,13 +1,12 @@
 # ws/consumers.py
-from channels.generic.websocket import AsyncWebsocketConsumer
-
 from src.settings import CHANNEL_LAYERS
 from src.models import Project
 
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import jwt
 from asgiref.sync import sync_to_async
-
+import logging
 
 # Add a new method to ChannelLayer
 # We can send message to client with client_id instead of channel_name
@@ -20,8 +19,7 @@ async def send_by_client_id(channel_layer, client_id, message):
                 "message": message,
             })
     except Exception as e:
-        print("E"*100)
-        print(e)
+        logging.error(e)
         pass
 
 ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
@@ -38,6 +36,10 @@ class WSConsumer(AsyncWebsocketConsumer):
             secret_key = (await sync_to_async(Project.objects.get)(id=self.project_id)).secret_key
             payload = jwt.decode(token, secret_key, algorithms=["HS256"])
             self.client_id = payload["client_id"]
+            if "sendable" in payload:
+                self.sendable = payload["sendable"]
+            else:
+                self.sendable = True
             await self.channel_layer.group_add(self.project_id, self.channel_name)
 
             if hasattr(self.channel_layer, "client_map"):
@@ -46,9 +48,11 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_layer.client_map = {self.client_id: {self.channel_name}}
 
             await self.accept()
+
+            ip = self.scope["client"][0]
+            logging.info(f"IP: {ip} - New connection to {self.project_id} from {self.client_id}")
         except Exception as e:
-            print("E"*100)
-            print(e)
+            logging.error(e)
             await self.close()
 
 
@@ -61,6 +65,8 @@ class WSConsumer(AsyncWebsocketConsumer):
 
 
     async def receive(self, text_data):
+        if not self.sendable:
+            return
         text_data_json = json.loads(text_data)
         if "receivers" in text_data_json: # send to specific user
             receivers = text_data_json["receivers"]
