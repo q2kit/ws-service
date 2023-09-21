@@ -2,6 +2,11 @@ from django.contrib import admin
 from django.urls import path
 from src.views import *
 
+admin.site.site_header = "Websocket Service Admin"
+admin.site.site_title = "Websocket Service Admin Portal"
+admin.site.index_title = "Welcome to Websocket Service Portal"
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', signup, name='signup'),

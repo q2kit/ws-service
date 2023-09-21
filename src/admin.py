@@ -1,28 +1,56 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
+from django.utils import timezone
 
+from src.funks import calc_time
 from src.models import Customer, Project
 
 
 class ProjectInline(admin.TabularInline):
     model = Project
-    fields = ("name", "description", "project_id", "secret_key")
-    readonly_fields = ("project_id", "secret_key")
+    fields = ("name", "description", "get_project_id_display", "get_secret_key_display")
+    readonly_fields = ("get_project_id_display", "get_secret_key_display")
     extra = 0
+    ordering = ("created_at",)
+
+    def get_project_id_display(self, obj=None):
+        if obj.name:
+            return obj.project_id
+        else:
+            return "-"
+    get_project_id_display.short_description = "Project ID"
+
+    def get_secret_key_display(self, obj=None):
+        if obj.name:
+            return obj.secret_key
+        else:
+            return "-"
+    get_secret_key_display.short_description = "Secret Key"
 
 
 class ProjectAdmin(admin.ModelAdmin):
     sortable_by = ("name", "owner", "created_at", "updated_at")
-    list_display = ("name", "project_id", "secret_key", "owner_display", "description", "created_at", "updated_at")
+    list_display = ("name", "project_id", "secret_key_display", "owner_display", "created_at_display")
     search_fields = ("name", "owner__email", "id", "secret_key")
     list_filter = ("owner",)
     list_select_related = ("owner",)
+    ordering = ("-created_at",)
 
     def owner_display(self, obj):
         link = reverse("admin:src_customer_change", args=[obj.owner.id])
         return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.email)
     owner_display.short_description = "Owner"
+
+    def secret_key_display(self, obj):
+        return obj.secret_key[:10] + "..."
+    secret_key_display.short_description = "Secret Key"
+
+    def created_at_display(self, obj):
+        now = timezone.now()
+        created_at = now - obj.created_at
+        return calc_time(created_at)
+    created_at_display.short_description = "Created At"
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

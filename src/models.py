@@ -1,10 +1,8 @@
-from django.db import models
-from uuid import uuid4
 import hashlib
 
+from django.db import models
 
-def hex_uuid():
-    return uuid4().hex
+from src.funks import hex_uuid
 
 
 class Customer(models.Model):
