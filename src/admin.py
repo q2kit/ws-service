@@ -80,9 +80,19 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ("id", "email", "projects_count", "created_at", "updated_at")
     search_fields = ("email", "id")
     inlines = [ProjectInline]
-    fields = ("email", "created_at", "updated_at")
-    readonly_fields = ("email", "created_at", "updated_at")
     list_display_links = ("id", "email")
+
+    def get_fields(self, request, obj=None):
+        if obj:
+            return ("email", "password", ("created_at", "updated_at"))
+        else:
+            return ("email", "password")
+        
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("email", "password", "created_at", "updated_at")
+        else:
+            return ()
 
 
 admin.site.register(Customer, CustomerAdmin)
