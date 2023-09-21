@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+
 from src.views import *
 
 admin.site.site_header = "Websocket Service Admin"
