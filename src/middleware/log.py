@@ -17,5 +17,6 @@ class RequestLoggerMiddleware(MiddlewareMixin):
             return None
         
         ip, _ = get_client_ip(request)
+        customer_id = request.customer.pk if request.customer else 'Anonymous'
 
-        logging.info(f"IP: {ip} - CustomerID: {request.customer.pk} - {request.method} - {request.path}")
+        logging.info(f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path}")
