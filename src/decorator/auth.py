@@ -6,5 +6,6 @@ def login_required(func):
         if request.customer:
             return func(request, *args, **kwargs)
         else:
-            return redirect('signin')
+            return redirect("signin")
+
     return wrapper

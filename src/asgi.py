@@ -7,8 +7,8 @@ from django.core.asgi import get_asgi_application
 
 # should be called before importing routing
 # you need to setup django first
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings')
-application = get_asgi_application() 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.settings")
+application = get_asgi_application()
 
 from src.ws import routing
 
@@ -21,4 +21,3 @@ application = ProtocolTypeRouter(
         ),
     }
 )
-

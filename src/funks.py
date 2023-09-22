@@ -7,31 +7,32 @@ from uuid import uuid4
 
 
 def validate_email(email: str) -> bool:
-    if re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
+    if re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email):
         return True, None
     else:
-        return False, 'Invalid email'
+        return False, "Invalid email"
 
 
 def validate_password(password: str) -> bool:
     if len(password) >= 6:
         return True, None
     else:
-        return False, 'Password must be at least 6 characters'
+        return False, "Password must be at least 6 characters"
 
 
 def validate_domain(domain: str) -> tuple[str, str]:
     if domain.startswith("http://"):
-        domain = domain[len("http://"):]
+        domain = domain[len("http://") :]
     elif domain.startswith("https://"):
-        domain = domain[len("https://"):]
+        domain = domain[len("https://") :]
     if domain.endswith("/"):
         domain = domain[:-1]
-    if domain == "localhost": return domain, None
-    if re.match(r'^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', domain):
+    if domain == "localhost":
+        return domain, None
+    if re.match(r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", domain):
         return domain, None
     else:
-        return domain, 'Invalid domain. (example.com or sub.example.com or localhost)'
+        return domain, "Invalid domain. (example.com or sub.example.com or localhost)"
 
 
 def hex_uuid():
@@ -48,7 +49,7 @@ def calc_time(time: timedelta) -> str:
         time = timedelta(days=0, hours=2, minutes=3, seconds=4)
         calc_time(time) -> "2 hours ago"
     """
-    
+
     years = time.days // 365
     months = time.days // 30
     weeks = time.days // 7
@@ -75,15 +76,19 @@ def calc_time(time: timedelta) -> str:
                 return f"{value} {key}s ago"
     else:
         return "Just now"
-    
+
 
 def created_at_display(self, obj=None):
-        if obj.created_at:
-            now = timezone.now()
-            created_at = now - obj.created_at
-            return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
-        else:
-            return "-"
+    if obj.created_at:
+        now = timezone.now()
+        created_at = now - obj.created_at
+        return format_html(
+            '<span title="{}">{}</span>', obj.created_at, calc_time(created_at)
+        )
+    else:
+        return "-"
+
+
 created_at_display.short_description = "Created At"
 
 
@@ -91,7 +96,11 @@ def updated_at_display(self, obj=None):
     if obj.updated_at:
         now = timezone.now()
         updated_at = now - obj.updated_at
-        return format_html('<span title="{}">{}</span>', obj.updated_at, calc_time(updated_at))
+        return format_html(
+            '<span title="{}">{}</span>', obj.updated_at, calc_time(updated_at)
+        )
     else:
         return "-"
+
+
 updated_at_display.short_description = "Updated At"

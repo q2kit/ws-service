@@ -1,5 +1,5 @@
 from django.utils.deprecation import MiddlewareMixin
-from django.conf import settings 
+from django.conf import settings
 from django.urls import resolve
 
 import logging
@@ -15,11 +15,13 @@ class RequestLoggerMiddleware(MiddlewareMixin):
 
         if resolve(request.path_info).app_name in LOGGING_EXCEPT_PATHS:
             return None
-        
-        ip, _ = get_client_ip(request)
-        customer_id = request.customer.pk if request.customer else 'Anonymous'
 
-        logging.info(f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path}")
+        ip, _ = get_client_ip(request)
+        customer_id = request.customer.pk if request.customer else "Anonymous"
+
+        logging.info(
+            f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path}"
+        )
 
     def process_exception(self, request, exception):
         try:
@@ -29,8 +31,10 @@ class RequestLoggerMiddleware(MiddlewareMixin):
 
         if resolve(request.path_info).app_name in LOGGING_EXCEPT_PATHS:
             return None
-        
-        ip, _ = get_client_ip(request)
-        customer_id = request.customer.pk if request.customer else 'Anonymous'
 
-        logging.error(f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path} - {exception}")
+        ip, _ = get_client_ip(request)
+        customer_id = request.customer.pk if request.customer else "Anonymous"
+
+        logging.error(
+            f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path} - {exception}"
+        )

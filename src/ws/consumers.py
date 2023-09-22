@@ -12,16 +12,22 @@ import logging
 # Add a new method to ChannelLayer
 # We can send message to client with client_id instead of channel_name
 from django.utils.module_loading import import_string
+
+
 async def send_by_client_id(channel_layer, client_id, message):
     try:
         for channel_name in channel_layer.client_map[client_id]:
-            await channel_layer.send(channel_name, {
-                "type": "send_message",
-                "message": message,
-            })
+            await channel_layer.send(
+                channel_name,
+                {
+                    "type": "send_message",
+                    "message": message,
+                },
+            )
     except Exception as e:
         logging.error(e)
         pass
+
 
 ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
 ChannelLayer.send_by_client_id = send_by_client_id
@@ -46,11 +52,19 @@ class WSConsumer(AsyncWebsocketConsumer):
             return
 
         try:
-            if not await sync_to_async(lambda domain, project_id: Domain.objects.filter(domain=domain, project_id=project_id).exists())(domain, self.project_id):
-                logging.error(f"Domain: {domain} - Project: {self.project_id} - Not found")
+            if not await sync_to_async(
+                lambda domain, project_id: Domain.objects.filter(
+                    domain=domain, project_id=project_id
+                ).exists()
+            )(domain, self.project_id):
+                logging.error(
+                    f"Domain: {domain} - Project: {self.project_id} - Not found"
+                )
                 await self.close()
                 return
-            secret_key = (await sync_to_async(Project.objects.get)(id=self.project_id)).secret_key
+            secret_key = (
+                await sync_to_async(Project.objects.get)(id=self.project_id)
+            ).secret_key
             payload = jwt.decode(token, secret_key, algorithms=["HS256"])
             self.client_id = payload["client_id"]
             if "sendable" in payload:
@@ -60,18 +74,21 @@ class WSConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(self.project_id, self.channel_name)
 
             if hasattr(self.channel_layer, "client_map"):
-                self.channel_layer.client_map[self.client_id].add(self.channel_name) # multiple login from same user
+                self.channel_layer.client_map[self.client_id].add(
+                    self.channel_name
+                )  # multiple login from same user
             else:
                 self.channel_layer.client_map = {self.client_id: {self.channel_name}}
 
             await self.accept()
 
             ip = self.scope["client"][0]
-            logging.info(f"IP: {ip} - Domain: {domain} - Project: {self.project_id} - Client: {self.client_id} - Connected")
+            logging.info(
+                f"IP: {ip} - Domain: {domain} - Project: {self.project_id} - Client: {self.client_id} - Connected"
+            )
         except Exception as e:
             logging.error(e)
             await self.close()
-
 
     async def disconnect(self, close_code):
         try:
@@ -80,16 +97,15 @@ class WSConsumer(AsyncWebsocketConsumer):
         except:
             pass
 
-
     async def receive(self, text_data):
         if not self.sendable:
             return
         text_data_json = json.loads(text_data)
-        if "receivers" in text_data_json: # send to specific user
+        if "receivers" in text_data_json:  # send to specific user
             receivers = text_data_json["receivers"]
 
-            if not isinstance(receivers, list): # if receivers is not list
-                receivers = [receivers] # convert to list of one element
+            if not isinstance(receivers, list):  # if receivers is not list
+                receivers = [receivers]  # convert to list of one element
 
             for recipient in receivers:
                 await self.channel_layer.send_by_client_id(
@@ -97,9 +113,9 @@ class WSConsumer(AsyncWebsocketConsumer):
                     {
                         "sender": self.client_id,
                         "message": text_data_json["message"],
-                    }
+                    },
                 )
-        else: # send to all users if receivers is not specified
+        else:  # send to all users if receivers is not specified
             await self.channel_layer.group_send(
                 self.project_id,
                 {
@@ -107,10 +123,9 @@ class WSConsumer(AsyncWebsocketConsumer):
                     "message": {
                         "sender": self.client_id,
                         "message": text_data_json["message"],
-                    }
+                    },
                 },
             )
-
 
     async def send_message(self, event):
         await self.send(text_data=json.dumps(event["message"]))
