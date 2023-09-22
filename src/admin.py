@@ -3,8 +3,9 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
 
-from src.funks import calc_time
-from src.models import Customer, Project
+from src.funks import created_at_display, updated_at_display
+from src.models import Customer, Project, Domain
+from src.forms import DomainForm
 
 
 class ProjectInline(admin.TabularInline):
@@ -14,6 +15,7 @@ class ProjectInline(admin.TabularInline):
     extra = 0
     ordering = ("created_at",)
     show_change_link = True
+    created_at_display = created_at_display
 
     def get_project_id_display(self, obj=None):
         if obj.name:
@@ -29,14 +31,18 @@ class ProjectInline(admin.TabularInline):
             return "-"
     get_secret_key_display.short_description = "Secret Key"
 
-    def created_at_display(self, obj=None):
-        if obj.created_at:
-            now = timezone.now()
-            created_at = now - obj.created_at
-            return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
-        else:
-            return "-"
-    created_at_display.short_description = "Created At"
+
+class DomainInline(admin.TabularInline):
+    model = Domain
+    fields = ("domain", "project", "created_at_display", "updated_at_display")
+    readonly_fields = ("created_at_display", "updated_at_display")
+    extra = 0
+    ordering = ("created_at",)
+    show_change_link = True
+    created_at_display = created_at_display
+    updated_at_display = updated_at_display
+    form = DomainForm
+    verbose_name = "Whitelisted Domain"
 
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -47,7 +53,8 @@ class ProjectAdmin(admin.ModelAdmin):
     list_select_related = ("owner",)
     ordering = ("-created_at",)
     list_display_links = ("name", "project_id")
-
+    inlines = [DomainInline]
+    created_at_display = created_at_display
 
     def owner_display(self, obj):
         link = reverse("admin:src_customer_change", args=[obj.owner.id])
@@ -57,12 +64,6 @@ class ProjectAdmin(admin.ModelAdmin):
     def secret_key_display(self, obj):
         return format_html('<span title="{}">{}</span>', obj.secret_key, obj.secret_key[:10] + "...")
     secret_key_display.short_description = "Secret Key"
-
-    def created_at_display(self, obj):
-        now = timezone.now()
-        created_at = now - obj.created_at
-        return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
-    created_at_display.short_description = "Created At"
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

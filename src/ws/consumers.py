@@ -1,6 +1,7 @@
 # ws/consumers.py
 from src.settings import CHANNEL_LAYERS
-from src.models import Project
+from src.models import Project, Domain
+from src.funks import validate_domain
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
@@ -26,13 +27,33 @@ ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
 ChannelLayer.send_by_client_id = send_by_client_id
 
 
+@sync_to_async
+def check_domain_access(domain, project_id):
+    return Domain.objects.filter(domain=domain, project_id=project_id).exists()
+
+
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.project_id = self.scope["url_route"]["kwargs"]["project_id"]
         token = self.scope["url_route"]["kwargs"]["token"]
 
+        for key, value in self.scope["headers"]:
+            if key.decode("utf-8") == "origin":
+                if value.decode("utf-8") == "null":
+                    await self.close()
+                    return
+                else:
+                    domain = value.decode("utf-8")
+                    domain, _ = validate_domain(domain)
+                    break
+        else:
+            await self.close()
+            return
+
         try:
-            # secret_key = Project.objects.get(id=self.project_id).secret_key
+            if not await check_domain_access(domain, self.project_id):
+                await self.close()
+                return
             secret_key = (await sync_to_async(Project.objects.get)(id=self.project_id)).secret_key
             payload = jwt.decode(token, secret_key, algorithms=["HS256"])
             self.client_id = payload["client_id"]
@@ -50,7 +71,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             await self.accept()
 
             ip = self.scope["client"][0]
-            logging.info(f"IP: {ip} - New connection to {self.project_id} from {self.client_id}")
+            logging.info(f"IP: {ip} - Domain: {domain} - Project: {self.project_id} - Client: {self.client_id} - Connected")
         except Exception as e:
             logging.error(e)
             await self.close()

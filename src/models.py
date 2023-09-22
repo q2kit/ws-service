@@ -59,3 +59,17 @@ class Project(models.Model):
 
     project_id = property(_get_project_id_val, _set_project_id_val)
     project_id.fget.short_description = "Project ID"
+
+
+class Domain(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="domains")
+    domain = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self) -> str:
+        return f"{self.project.name} - {self.domain}"
+
+    class Meta:
+        unique_together = ("project", "domain")
+        ordering = ("-created_at",)

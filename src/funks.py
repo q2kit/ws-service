@@ -1,3 +1,6 @@
+from django.utils.html import format_html
+from django.utils import timezone
+
 import re
 from datetime import timedelta
 from uuid import uuid4
@@ -15,6 +18,20 @@ def validate_password(password: str) -> bool:
         return True, None
     else:
         return False, 'Password must be at least 6 characters'
+
+
+def validate_domain(domain: str) -> tuple[str, str]:
+    if domain.startswith("http://"):
+        domain = domain[len("http://"):]
+    elif domain.startswith("https://"):
+        domain = domain[len("https://"):]
+    if domain.endswith("/"):
+        domain = domain[:-1]
+    if domain == "localhost": return domain, None
+    if re.match(r'^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', domain):
+        return domain, None
+    else:
+        return domain, 'Invalid domain. (example.com or sub.example.com or localhost)'
 
 
 def hex_uuid():
@@ -58,3 +75,23 @@ def calc_time(time: timedelta) -> str:
                 return f"{value} {key}s ago"
     else:
         return "Just now"
+    
+
+def created_at_display(self, obj=None):
+        if obj.created_at:
+            now = timezone.now()
+            created_at = now - obj.created_at
+            return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
+        else:
+            return "-"
+created_at_display.short_description = "Created At"
+
+
+def updated_at_display(self, obj=None):
+    if obj.updated_at:
+        now = timezone.now()
+        updated_at = now - obj.updated_at
+        return format_html('<span title="{}">{}</span>', obj.updated_at, calc_time(updated_at))
+    else:
+        return "-"
+updated_at_display.short_description = "Updated At"
