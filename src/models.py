@@ -62,6 +62,10 @@ class Project(models.Model):
     project_id = property(_get_project_id_val, _set_project_id_val)
     project_id.fget.short_description = "Project ID"
 
+    def refresh_secret_key(self):
+        self.secret_key = hex_uuid()
+        self.save()
+
 
 class Domain(models.Model):
     project = models.ForeignKey(

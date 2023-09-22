@@ -58,6 +58,18 @@ class DomainInline(admin.TabularInline):
 
 
 class ProjectAdmin(admin.ModelAdmin):
+    class Media:
+        css = {
+            "all": (
+                "css/refresh_secret_key.css",
+                "css/fontawesome.css",
+            )
+        }
+        js = (
+            "js/refresh_secret_key.js",
+            "js/fontawesome.js"
+        )
+
     sortable_by = ("name", "owner", "created_at", "updated_at")
     list_display = (
         "name",

@@ -9,6 +9,7 @@ admin.site.index_title = "Welcome to Websocket Service Portal"
 
 
 urlpatterns = [
+    path("admin/api/refresh_secret_key/<str:project_id>/", refresh_secret_key, name="refresh_secret_key"),
     path("admin/", admin.site.urls, name="admin"),
     path("signup/", signup, name="signup"),
     path("signin/", signin, name="signin"),

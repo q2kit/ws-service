@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from src.models import Customer, Project
 from src.funks import validate_email, validate_password
-from src.decorator.auth import login_required
+from src.decorator.auth import customer_login_required, user_login_required
+
+import jwt
 
 
 def signup(request):
@@ -53,12 +57,12 @@ def logout(request):
     return redirect("signin")
 
 
-@login_required
+@customer_login_required
 def dashboard(request):
     return render(request, "dashboard.html")
 
 
-@login_required
+@customer_login_required
 def create_project(request):
     if request.method == "GET":
         return render(request, "create_project.html")
@@ -75,7 +79,7 @@ def create_project(request):
         return redirect("project_details", project_id=p_id)
 
 
-@login_required
+@customer_login_required
 def project_details(request, project_id):
     try:
         project = Project.objects.get(id=project_id)
@@ -86,9 +90,6 @@ def project_details(request, project_id):
 
 
 def create_example_token(request, secret_key):
-    from django.http import HttpResponse
-    import jwt
-
     return HttpResponse(
         jwt.encode(
             {
@@ -98,3 +99,14 @@ def create_example_token(request, secret_key):
             algorithm="HS256",
         )
     )
+
+
+@csrf_exempt
+@user_login_required
+def refresh_secret_key(request, project_id):
+    try:
+        Project.objects.get(id=project_id).refresh_secret_key()
+        messages.success(request, "Secret key refreshed successfully")
+        return HttpResponse("OK")
+    except:
+        return HttpResponse("Project not found", status=404)
