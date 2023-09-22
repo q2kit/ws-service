@@ -27,11 +27,6 @@ ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
 ChannelLayer.send_by_client_id = send_by_client_id
 
 
-@sync_to_async
-def check_domain_access(domain, project_id):
-    return Domain.objects.filter(domain=domain, project_id=project_id).exists()
-
-
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.project_id = self.scope["url_route"]["kwargs"]["project_id"]
@@ -51,7 +46,8 @@ class WSConsumer(AsyncWebsocketConsumer):
             return
 
         try:
-            if not await check_domain_access(domain, self.project_id):
+            if not await sync_to_async(lambda domain, project_id: Domain.objects.filter(domain=domain, project_id=project_id).exists())(domain, self.project_id):
+                logging.error(f"Domain: {domain} - Project: {self.project_id} - Not found")
                 await self.close()
                 return
             secret_key = (await sync_to_async(Project.objects.get)(id=self.project_id)).secret_key
