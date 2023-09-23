@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["ws-service.q2k.dev", "*"]
 CSRF_TRUSTED_ORIGINS = ["https://ws-service.q2k.dev"]
@@ -55,9 +55,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "src.middleware.auth.AuthMiddleware",
     "src.middleware.log.RequestLoggerMiddleware",
 ]
+
+AUTH_USER_MODEL = 'src.User'
+
+LOGIN_REDIRECT_URL = '/admin/'
 
 ROOT_URLCONF = "src.urls"
 

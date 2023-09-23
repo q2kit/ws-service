@@ -3,21 +3,6 @@ from django.utils import timezone
 
 import re
 from datetime import timedelta
-from uuid import uuid4
-
-
-def validate_email(email: str) -> bool:
-    if re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email):
-        return True, None
-    else:
-        return False, "Invalid email"
-
-
-def validate_password(password: str) -> bool:
-    if len(password) >= 6:
-        return True, None
-    else:
-        return False, "Password must be at least 6 characters"
 
 
 def validate_domain(domain: str) -> tuple[str, str]:
@@ -33,10 +18,14 @@ def validate_domain(domain: str) -> tuple[str, str]:
         return domain, None
     else:
         return domain, "Invalid domain. (example.com or sub.example.com or localhost)"
+    
 
+def validate_project_name(name: str) -> tuple[str, str]:
+    if re.match(r"^[a-zA-Z0-9-_]+$", name):
+        return name.lower(), None
+    else:
+        return name, "Invalid name. Must be alphanumeric characters, hyphen or underscore."
 
-def hex_uuid():
-    return uuid4().hex
 
 
 def calc_time(time: timedelta) -> str:

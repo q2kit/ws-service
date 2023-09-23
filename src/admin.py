@@ -1,11 +1,12 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.urls import reverse
-from django.utils import timezone
+from django.contrib.auth.admin import UserAdmin
 
 from src.funks import created_at_display, updated_at_display
-from src.models import Customer, Project, Domain
-from src.forms import DomainForm
+from src.models import User, Project, Domain
+from src.forms import DomainForm, ProjectForm, ProjectFormSuperUser
 
 
 class ProjectInline(admin.TabularInline):
@@ -13,12 +14,10 @@ class ProjectInline(admin.TabularInline):
     fields = (
         "name",
         "description",
-        "get_project_id_display",
         "get_secret_key_display",
         "created_at_display",
     )
     readonly_fields = (
-        "get_project_id_display",
         "get_secret_key_display",
         "created_at_display",
     )
@@ -27,16 +26,8 @@ class ProjectInline(admin.TabularInline):
     show_change_link = True
     created_at_display = created_at_display
 
-    def get_project_id_display(self, obj=None):
-        if obj.name:
-            return obj.project_id
-        else:
-            return "-"
-
-    get_project_id_display.short_description = "Project ID"
-
     def get_secret_key_display(self, obj=None):
-        if obj.name:
+        if obj:
             return obj.secret_key
         else:
             return "-"
@@ -70,25 +61,114 @@ class ProjectAdmin(admin.ModelAdmin):
             "js/fontawesome.js"
         )
 
-    sortable_by = ("name", "owner", "created_at", "updated_at")
-    list_display = (
-        "name",
-        "project_id",
-        "secret_key_display",
-        "owner_display",
-        "created_at_display",
-    )
-    search_fields = ("name", "owner__email", "id", "secret_key")
-    list_filter = ("owner",)
     list_select_related = ("owner",)
     ordering = ("-created_at",)
-    list_display_links = ("name", "project_id")
+    list_display_links = ("name",)
     inlines = [DomainInline]
     created_at_display = created_at_display
+    updated_at_display = updated_at_display
+
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return Project.objects.all()
+        else:
+            return Project.objects.filter(owner=request.user)
+        
+    def save_model(self, request, obj, form, change):
+        if not obj.owner:
+            obj.owner = request.user
+        obj.save()
+
+    def get_sortable_by(self, request):
+        if request.user.is_superuser:
+            return ("name", "owner", "created_at", "updated_at")
+        else:
+            return ("name", "created_at", "updated_at")
+        
+    def get_list_display(self, request):
+        if request.user.is_superuser:
+            return (
+                "name",
+                "secret_key_display",
+                "owner_display",
+                "created_at_display",
+                "updated_at_display",
+            )
+        else:
+            return (
+                "name",
+                "secret_key_display",
+                "created_at_display",
+                "updated_at_display",
+            )
+
+    def get_search_fields(self, request):
+        if request.user.is_superuser:
+            return ("name", "owner__email", "owner__username")
+        else:
+            return ("name",)
+        
+    def get_list_filter(self, request):
+        if request.user.is_superuser:
+            return ("owner",)
+        else:
+            return ()
+        
+    def get_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            if obj:
+                return (
+                    "name",
+                    "owner_display",
+                    "description",
+                    "secret_key",
+                    "allow_any_domain",
+                    ("created_at", "updated_at"),
+                )
+            else:
+                return ("name", "owner", "description", "allow_any_domain")
+        else:
+            if obj:
+                return (
+                    "name",
+                    "description",
+                    "secret_key",
+                    "allow_any_domain",
+                    ("created_at", "updated_at"),
+                )
+            else:
+                return ("name", "description", "allow_any_domain")
+            
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            if obj:
+                return (
+                    "owner_display",
+                    "secret_key",
+                    "created_at",
+                    "updated_at",
+                )
+            else:
+                return ("secret_key",)
+        else:
+            if obj:
+                return (
+                    "secret_key",
+                    "created_at",
+                    "updated_at",
+                )
+            else:
+                return ("secret_key",)
+            
+    def get_form(self, request, obj=None, **kwargs):
+        if request.user.is_superuser:
+            return ProjectFormSuperUser
+        else:
+            return ProjectForm
 
     def owner_display(self, obj):
-        link = reverse("admin:src_customer_change", args=[obj.owner.id])
-        return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.email)
+        link = reverse("admin:src_user_change", args=[obj.owner.id])
+        return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.username)
 
     owner_display.short_description = "Owner"
 
@@ -99,50 +179,26 @@ class ProjectAdmin(admin.ModelAdmin):
 
     secret_key_display.short_description = "Secret Key"
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return (
-                "owner_display",
-                "project_id",
-                "secret_key",
-                "created_at",
-                "updated_at",
-            )
-        else:
-            return ("project_id", "secret_key")
 
-    def get_fields(self, request, obj=None):
-        if obj:
-            return (
-                "name",
-                "owner_display",
-                "description",
-                "project_id",
-                "secret_key",
-                ("created_at", "updated_at"),
-            )
-        else:
-            return ("name", "owner", "description")
-
-
-class CustomerAdmin(admin.ModelAdmin):
-    list_display = ("id", "email", "projects_count", "created_at", "updated_at")
-    search_fields = ("email", "id")
+class CustomUserAdmin(UserAdmin):
+    list_display = ("id", "username", "projects_count", "date_joined")
+    search_fields = ("username",)
     inlines = [ProjectInline]
-    list_display_links = ("id", "email")
+    list_display_links = ("id", "username")
 
     def get_fields(self, request, obj=None):
         if obj:
-            return ("email", "password", ("created_at", "updated_at"))
+            return ("username", "password", "date_joined")
         else:
-            return ("email", "password")
+            return ("username", "password")
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ("email", "password", "created_at", "updated_at")
+            return ("username", "password", "date_joined")
         else:
             return ()
 
 
-admin.site.register(Customer, CustomerAdmin)
+admin.site.unregister(Group)
+admin.site.register(User, CustomUserAdmin)
 admin.site.register(Project, ProjectAdmin)

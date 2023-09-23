@@ -8,9 +8,8 @@ $$(document).ready(function () {
             if (confirm("Are you sure you want to refresh the secret key?") == false) {
                 return;
             }
-            let channel_id = $$(".field-project_id > div > div").text();
-            let url = "/admin/api/refresh_secret_key/" + channel_id + "/";
-            let fd = new FormData();
+            let project = $$(".field-name > div > input").val();
+            let url = "/admin/api/refresh_secret_key/" + project + "/";
             $$.ajax({
                 url: url,
                 type: "POST",
