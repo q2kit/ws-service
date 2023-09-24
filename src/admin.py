@@ -168,8 +168,11 @@ class ProjectAdmin(admin.ModelAdmin):
             return ProjectForm
 
     def owner_display(self, obj):
-        link = reverse("admin:src_user_change", args=[obj.owner.id])
-        return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.username)
+        if obj.owner:
+            link = reverse("admin:src_user_change", args=[obj.owner.id])
+            return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.username)
+        else:
+            return "-"
 
     owner_display.short_description = "Owner"
 

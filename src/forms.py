@@ -161,6 +161,13 @@ class ProjectFormSuperUser(ModelForm):
         widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
     )
 
+    owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        required=True,
+        label=_("Owner"),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
     def clean_name(self):
         name = self.cleaned_data.get("name")
         name, error = validate_project_name(name)
