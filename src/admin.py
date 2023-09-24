@@ -211,6 +211,8 @@ class CustomUserAdmin(admin.ModelAdmin):
         if not obj.id:
             obj.set_password(form.cleaned_data["password"])
             obj.username = form.cleaned_data["username"].lower()
+            obj.is_active = True
+            obj.is_staff = True
         if request.user.is_superuser and obj.verified:
             # grant permission
             content_type = ContentType.objects.get_for_models(Project, Domain)
