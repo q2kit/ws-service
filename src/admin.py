@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from src.funks import created_at_display, updated_at_display
 from src.models import User, Project, Domain
-from src.forms import DomainForm, ProjectForm, ProjectFormSuperUser
+from src.forms import DomainForm, ProjectForm, ProjectFormSuperUser, ProjectAddFormSuperUser
 
 
 class ProjectInline(admin.TabularInline):
@@ -76,8 +76,9 @@ class ProjectAdmin(admin.ModelAdmin):
             return Project.objects.filter(owner=request.user)
         
     def save_model(self, request, obj, form, change):
-        if not obj.owner:
-            obj.owner = request.user
+        if not change: # create
+            if not obj.owner:
+                obj.owner = request.user
         obj.save()
 
     def get_sortable_by(self, request):
@@ -163,7 +164,10 @@ class ProjectAdmin(admin.ModelAdmin):
             
     def get_form(self, request, obj=None, **kwargs):
         if request.user.is_superuser:
-            return ProjectFormSuperUser
+            if obj:
+                return ProjectFormSuperUser
+            else:
+                return ProjectAddFormSuperUser
         else:
             return ProjectForm
 

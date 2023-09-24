@@ -142,7 +142,7 @@ class ProjectForm(ModelForm):
 class ProjectFormSuperUser(ModelForm):
     class Meta:
         model = Project
-        fields = ("name", "description", "allow_any_domain", "owner")
+        fields = ("name", "description", "allow_any_domain")
         labels = {
             "name": "Project Name",
             "description": "Description",
@@ -161,13 +161,6 @@ class ProjectFormSuperUser(ModelForm):
         widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
     )
 
-    owner = forms.ModelChoiceField(
-        queryset=User.objects.all(),
-        required=True,
-        label=_("Owner"),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
     def clean_name(self):
         name = self.cleaned_data.get("name")
         name, error = validate_project_name(name)
@@ -176,3 +169,15 @@ class ProjectFormSuperUser(ModelForm):
         self.cleaned_data["name"] = name
         
         return name
+
+
+class ProjectAddFormSuperUser(ProjectFormSuperUser):
+    class Meta(ProjectFormSuperUser.Meta):
+        fields = ("name", "description", "allow_any_domain", "owner")
+        
+    owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        required=True,
+        label=_("Owner"),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
