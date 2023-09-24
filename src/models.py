@@ -1,10 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-import secrets
+from src.funks import secret_key_generator
 
 
 class User(AbstractUser):
+    verified = models.BooleanField(default=False)
+
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
 
@@ -25,7 +28,7 @@ class Project(models.Model):
         on_delete=models.SET_NULL,
         related_name="projects"
     )
-    secret_key = models.CharField(max_length=100, default=secrets.token_urlsafe(32), editable=False)
+    secret_key = models.CharField(max_length=100, default=secret_key_generator, editable=False)
     allow_any_domain = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,7 +40,7 @@ class Project(models.Model):
         return f"{self.name}"
 
     def refresh_secret_key(self):
-        self.secret_key = secrets.token_urlsafe(32)
+        self.secret_key = secret_key_generator()
         self.save()
 
 

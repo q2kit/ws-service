@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.urls import reverse
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 from src.funks import created_at_display, updated_at_display
 from src.models import User, Project, Domain
@@ -180,7 +181,8 @@ class ProjectAdmin(admin.ModelAdmin):
     secret_key_display.short_description = "Secret Key"
 
 
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(admin.ModelAdmin):
+    add_form_template = "admin/auth/user/add_form.html"
     list_display = ("id", "username", "projects_count", "date_joined")
     search_fields = ("username",)
     inlines = [ProjectInline]
@@ -188,9 +190,9 @@ class CustomUserAdmin(UserAdmin):
 
     def get_fields(self, request, obj=None):
         if obj:
-            return ("username", "password", "date_joined")
+            return ("username", "password", "email", "verified")
         else:
-            return ("username", "password")
+            return ("username", "password", "email", "verified")
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -198,6 +200,28 @@ class CustomUserAdmin(UserAdmin):
         else:
             return ()
 
+    def save_model(self, request, obj, form, change):
+        if not obj.id:
+            obj.set_password(form.cleaned_data["password"])
+            obj.username = form.cleaned_data["username"].lower()
+        if request.user.is_superuser and obj.verified:
+            # grant permission
+            content_type = ContentType.objects.get_for_models(Project, Domain)
+            permissions = (
+                "add_project",
+                "change_project",
+                "delete_project",
+                "add_domain",
+                "change_domain",
+                "delete_domain",
+            )
+            permission = Permission.objects.filter(
+                codename__in=permissions,
+                content_type__in=content_type.values(),
+            )
+            obj.user_permissions.set(permission)
+
+        obj.save()
 
 admin.site.unregister(Group)
 admin.site.register(User, CustomUserAdmin)
