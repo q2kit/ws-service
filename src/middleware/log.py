@@ -17,10 +17,9 @@ class RequestLoggerMiddleware(MiddlewareMixin):
             return None
 
         ip, _ = get_client_ip(request)
-        customer_id = request.customer.pk if request.customer else "Anonymous"
 
         logging.info(
-            f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path}"
+            f"IP: {ip} - User: {request.user} - {request.method} - {request.path}"
         )
 
     def process_exception(self, request, exception):
@@ -33,8 +32,7 @@ class RequestLoggerMiddleware(MiddlewareMixin):
             return None
 
         ip, _ = get_client_ip(request)
-        customer_id = request.customer.pk if request.customer else "Anonymous"
 
         logging.error(
-            f"IP: {ip} - CustomerID: {customer_id} - {request.method} - {request.path} - {exception}"
+            f"IP: {ip} - User: {request.user} - {request.method} - {request.path} - {exception}"
         )

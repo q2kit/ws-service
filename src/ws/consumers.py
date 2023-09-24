@@ -35,48 +35,43 @@ ChannelLayer.send_by_client_id = send_by_client_id
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.project_id = self.scope["url_route"]["kwargs"]["project_id"]
-        token = self.scope["url_route"]["kwargs"]["token"]
+        try:
+            self.project = self.scope["url_route"]["kwargs"]["project"]
+            token = self.scope["url_route"]["kwargs"]["token"]
+            project = await sync_to_async(Project.objects.get)(name=self.project)
 
-        for key, value in self.scope["headers"]:
-            if key.decode("utf-8") == "origin":
-                if value.decode("utf-8") == "null":
+            for key, value in self.scope["headers"]:
+                if key.decode("utf-8") == "origin":
+                    if value.decode("utf-8") == "null":
+                        await self.close()
+                        return
+                    else:
+                        domain = value.decode("utf-8")
+                        domain, _ = validate_domain(domain)
+                        break
+            else:
+                domain = "Unknown"
+
+            if not project.allow_any_domain:
+                if not await sync_to_async(lambda domain, project: Domain.objects.filter(domain=domain, project=project).exists())(domain, project):
+                    logging.error(
+                        f"Domain: {domain} - Project: {self.project} - Not found"
+                    )
                     await self.close()
                     return
-                else:
-                    domain = value.decode("utf-8")
-                    domain, _ = validate_domain(domain)
-                    break
-        else:
-            await self.close()
-            return
-
-        try:
-            if not await sync_to_async(
-                lambda domain, project_id: Domain.objects.filter(
-                    domain=domain, project_id=project_id
-                ).exists()
-            )(domain, self.project_id):
-                logging.error(
-                    f"Domain: {domain} - Project: {self.project_id} - Not found"
-                )
-                await self.close()
-                return
-            secret_key = (
-                await sync_to_async(Project.objects.get)(id=self.project_id)
-            ).secret_key
-            payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+            
+            payload = jwt.decode(token, project.secret_key, algorithms=["HS256"])
             self.client_id = payload["client_id"]
             if "sendable" in payload:
                 self.sendable = payload["sendable"]
             else:
                 self.sendable = True
-            await self.channel_layer.group_add(self.project_id, self.channel_name)
+            await self.channel_layer.group_add(self.project, self.channel_name)
 
             if hasattr(self.channel_layer, "client_map"):
                 self.channel_layer.client_map[self.client_id].add(
                     self.channel_name
-                )  # multiple login from same user
+                )  # multiple login from same client
             else:
                 self.channel_layer.client_map = {self.client_id: {self.channel_name}}
 
@@ -84,7 +79,7 @@ class WSConsumer(AsyncWebsocketConsumer):
 
             ip = self.scope["client"][0]
             logging.info(
-                f"IP: {ip} - Domain: {domain} - Project: {self.project_id} - Client: {self.client_id} - Connected"
+                f"IP: {ip} - Domain: {domain} - Project: {self.project} - Client: {self.client_id} - Connected"
             )
         except Exception as e:
             logging.error(e)
@@ -93,7 +88,7 @@ class WSConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         try:
             self.channel_layer.client_map[self.client_id].remove(self.channel_name)
-            self.channel_layer.group_discard(self.project_id, self.channel_name)
+            self.channel_layer.group_discard(self.project, self.channel_name)
         except:
             pass
 
@@ -117,7 +112,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 )
         else:  # send to all users if receivers is not specified
             await self.channel_layer.group_send(
-                self.project_id,
+                self.project,
                 {
                     "type": "send_message",
                     "message": {
