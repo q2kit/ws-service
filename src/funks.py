@@ -1,7 +1,6 @@
 from django.utils.html import format_html
 from django.utils import timezone
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
 
 import re
 from datetime import timedelta
@@ -115,32 +114,35 @@ def updated_at_display(self, obj=None):
 updated_at_display.short_description = "Updated At"
 
 
-def send_verify_email(user, token):
+def send_verify_email(request, user, token):
     try:
         email = user.email
         username = user.username
-        URL_VERIFY = f"https://ws-service.q2k.dev/verify?token={token}"
-        ICLOUD_ACCOUNT = os.environ.get("ICLOUD_ACCOUNT")
-        ICLOUD_PASS = os.environ.get("ICLOUD_PASS")
-        ICLOUD_SENDER = os.environ.get("ICLOUD_SENDER")
-        SENDER_NAME = "Websocket Service Team"
+        SERVER_HOST = f"{request.scheme}://{request.get_host()}"
+        VERIFY_URL = f"{SERVER_HOST}{reverse('verify')}?token={token}"
+        SMTP_ACCOUNT = os.environ.get("SMTP_ACCOUNT")
+        SMTP_PASS = os.environ.get("SMTP_PASS")
+        SMTP_SENDER = os.environ.get("SMTP_SENDER")
+        SENDER_NAME = os.environ.get("SENDER_NAME")
         SUBJECT = "Verify your email"
         MESSAGE = f"""
             <html>
                 <head></head>
-                <body style="font-size: 16px">
-                    <p>Hi, {username}</p>
-                    <p>Thank you for signing up to Websocket Service.</p>
+                <body style="font-size: 14px">
+                    <p>Hi, {username}!</p>
+                    <p>Thank you for signing up to <a href="{SERVER_HOST}">Websocket Service</a>.</p>
                     <p>Please click the link below to verify your email address.</p>
-                    <a href="{URL_VERIFY}">{URL_VERIFY}</a>
-                    <p style="font-size: 13px">This link will expire in 30 minutes.</p>
-                    <p style="font-size: 13px"><i>If you did not request this, please ignore this email. Thank you :)</i></p>
+                    <a href="{VERIFY_URL}">{VERIFY_URL}</a>
+                    <p>This link will expire in 30 minutes.</p>
+                    <p><i>If you did not request this, please ignore this email. Thank you :)</i></p>
+                    <p>Thanks for using our site!</p>
+                    <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
                 </body>
             </html>
         """
 
         msg = MIMEMultipart()
-        msg["From"] = formataddr((SENDER_NAME, ICLOUD_SENDER))
+        msg["From"] = formataddr((SENDER_NAME, SMTP_SENDER))
         msg["To"] = email
         msg["Subject"] = SUBJECT
         msg.attach(MIMEText(MESSAGE, "html"))
@@ -148,8 +150,50 @@ def send_verify_email(user, token):
         with smtplib.SMTP('smtp.mail.me.com', 587) as smtp:
             smtp.ehlo()
             smtp.starttls()
-            smtp.login(ICLOUD_ACCOUNT, ICLOUD_PASS)
-            smtp.sendmail(ICLOUD_SENDER, email, msg.as_string())
+            smtp.login(SMTP_ACCOUNT, SMTP_PASS)
+            smtp.sendmail(SMTP_SENDER, email, msg.as_string())
     except Exception as e:
-        print(e)
-        logging.error(f"Error sending email. Email: {email} Error: {e}")
+        logging.error(f"Error sending verify email. Email: {email} Error: {e}")
+
+
+def send_password_reset_email(request, user, token):
+    try:
+        email = user.email
+        username = user.username
+        SERVER_HOST = f"{request.scheme}://{request.get_host()}"
+        RESET_URL = f"{SERVER_HOST}{reverse('password_reset_confirm', kwargs={'token': token})}"
+        SMTP_ACCOUNT = os.environ.get("SMTP_ACCOUNT")
+        SMTP_PASS = os.environ.get("SMTP_PASS")
+        SMTP_SENDER = os.environ.get("SMTP_SENDER")
+        SENDER_NAME = os.environ.get("SENDER_NAME")
+        SUBJECT = "Reset your password"
+        MESSAGE = f"""
+            <html>
+                <head></head>
+                <body style="font-size: 14px">
+                    <p>Hello,
+                    <p>You'ra receiving this email because you requested a password reset for your user account at <a href="{SERVER_HOST}">Websocket Service</a>.</p>
+                    <p>Please click the link below to reset your password.</p>
+                    <a href="{RESET_URL}">{RESET_URL}</a>
+                    <p>Your username, in case you've forgotten: {username}</p>
+                    <p>This link will expire in 5 minutes.</p>
+                    <p><i>If you did not request this, please ignore this email. Thank you :)</i></p>
+                    <p>Thanks for using our site!</p>
+                    <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
+                </body>
+            </html>
+        """
+
+        msg = MIMEMultipart()
+        msg["From"] = formataddr((SENDER_NAME, SMTP_SENDER))
+        msg["To"] = email
+        msg["Subject"] = SUBJECT
+        msg.attach(MIMEText(MESSAGE, "html"))
+
+        with smtplib.SMTP('smtp.mail.me.com', 587) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login(SMTP_ACCOUNT, SMTP_PASS)
+            smtp.sendmail(SMTP_SENDER, email, msg.as_string())
+    except Exception as e:
+        logging.error(f"Error sending password reset email. Email: {email} Error: {e}")

@@ -190,7 +190,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class CustomUserAdmin(admin.ModelAdmin):
     add_form_template = "admin/auth/user/add_form.html"
-    list_display = ("id", "username", "projects_count", "date_joined")
+    list_display = ("id", "username", "email", "projects_count", "date_joined")
     search_fields = ("username",)
     inlines = [ProjectInline]
     list_display_links = ("id", "username")

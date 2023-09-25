@@ -44,7 +44,7 @@
 </p>
 {% endif %}
 
-<form action="/signup/" method="post" id="register-form">{% csrf_token %}
+<form action="{{ signup_url }}" method="post" id="register-form">{% csrf_token %}
   {% for field in form %}
     <div class="form-row">
       {{ field.errors }}
@@ -52,12 +52,9 @@
       {{ field }}
     </div>
   {% endfor %}
-  {% url 'password_reset' as password_reset_url %}
-  {% if password_reset_url %}
-  <div class="password-reset-link">
-    <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+  <div class="login-link">
+    <a href="{{ login_url }}">Already have an account?</a>
   </div>
-  {% endif %}
   <div class="submit-row">
     <input type="submit" value="Sign Up">
   </div>
@@ -80,6 +77,11 @@
     {% endif %}
   {% endfor %}
 </form>
-
+<style>
+  .login-link {
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+</style>
 </div>
 {% endblock %}

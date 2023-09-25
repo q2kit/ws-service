@@ -7,21 +7,24 @@ from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.views.generic.edit import FormView
+from django.utils.translation import gettext_lazy as _
+from django.urls import reverse_lazy
+from django.contrib.auth.views import PasswordContextMixin
+from django.contrib.auth.forms import SetPasswordForm
 
-from src.forms import RegistrationForm
+from src.forms import RegistrationForm, PasswordResetForm
 from src.models import Project, User, Domain
-from src.funks import send_verify_email
+from src.funks import send_verify_email, send_password_reset_email
 
 import jwt
 import threading
 from datetime import datetime, timedelta
+import logging
 
 
 def index(request):
-    if request.user.is_authenticated:
-        return redirect("/admin")
-    else:
-        return redirect("/signup")
+    return redirect("admin:index")
 
 
 def create_example_token(request, secret_key):
@@ -73,7 +76,7 @@ def signup(request):
             token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
             threading.Thread(
                 target=send_verify_email,
-                args=(request.user, token),
+                args=(request, request.user, token),
             ).start()
             return redirect("/admin")
     else:
@@ -85,7 +88,9 @@ def signup(request):
         {
             "form": form,
             "username": request.user.username,
-            "site_header": "Websocket Service Admin"
+            "site_header": "Websocket Service Admin",
+            "signup_url": reverse_lazy("signup"),
+            "login_url": reverse_lazy("admin:login"),
         }
     )
 
@@ -130,7 +135,7 @@ def verify_email(request):
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
         threading.Thread(
             target=send_verify_email,
-            args=(request.user, token),
+            args=(request, request.user, token),
         ).start()
         messages.success(request, f"Verification email sent to {request.user.email}")
         cache.set(f"verify_email_{request.user.id}", True, 60)
@@ -141,3 +146,77 @@ def verify_email(request):
             return redirect('/admin')
     else:
         raise Http404
+
+
+class PasswordResetView(PasswordContextMixin, FormView):
+    form_class = PasswordResetForm
+    title = _("Password reset")
+    template_name = "registration/password_reset_form.html"
+    success_url = reverse_lazy("password_reset_done")
+
+    def form_valid(self, form):
+        email = form.cleaned_data.get("email")
+        try:
+            user = User.objects.get(email=email)
+            payload = {
+                "user_id": user.id,
+                "exp": datetime.utcnow() + timedelta(minutes=5),
+            }
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            threading.Thread(
+                target=send_password_reset_email,
+                args=(self.request, user, token),
+            ).start()
+        except Exception as e:
+            logging.error(f"Password reset failed. Email: {email} Error: {e}")
+        return super().form_valid(form)
+
+
+class PasswordResetConfirmView(PasswordContextMixin, FormView):
+    template_name = "registration/password_reset_confirm.html"
+    success_url = "/admin"
+    form_class = SetPasswordForm
+    title = _("Enter new password")
+
+    def dispatch(self, *args, **kwargs):
+        self.validlink = False
+        self.user = None
+        token = kwargs.get('token')
+        if token:
+            try:
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+                user_id = payload.get("user_id")
+                user = User.objects.get(id=user_id)
+                self.user = user
+                self.validlink = True
+                return super().dispatch(*args, **kwargs)
+            except Exception as e:
+                logging.error(f"Password reset failed. Error: {e}")
+                pass
+
+        # Display the "Password reset unsuccessful" page.
+        return self.render_to_response(self.get_context_data())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.validlink:
+            context["validlink"] = True
+        else:
+            context.update(
+                {
+                    "form": None,
+                    "title": _("Password reset unsuccessful"),
+                    "validlink": False,
+                }
+            )
+        return context
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.user
+        return kwargs
+    
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return super().form_valid(form)

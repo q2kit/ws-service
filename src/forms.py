@@ -181,3 +181,11 @@ class ProjectAddFormSuperUser(ProjectFormSuperUser):
         label=_("Owner"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
+
+
+class PasswordResetForm(forms.Form):
+    email = forms.EmailField(
+        label=_("Email"),
+        max_length=254,
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
+    )
