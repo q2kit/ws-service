@@ -62,15 +62,15 @@ class WSConsumer(AsyncWebsocketConsumer):
                     return
             
             payload = jwt.decode(token, project.secret_key, algorithms=["HS256"])
-            self.client_id = payload["client_id"]
+            self.id = payload["id"]
+            self.client_id = f"{self.project}_{self.id}"
             await self.channel_layer.group_add(self.project, self.channel_name)
 
             if hasattr(self.channel_layer, "client_map"):
-                client_id = f"{self.project}_{self.client_id}"
-                if client_id in self.channel_layer.client_map:
-                    self.channel_layer.client_map[client_id].add(self.channel_name)
+                if self.client_id in self.channel_layer.client_map:
+                    self.channel_layer.client_map[self.client_id].add(self.channel_name)
                 else:
-                    self.channel_layer.client_map[client_id] = {self.channel_name}
+                    self.channel_layer.client_map[self.client_id] = {self.channel_name}
             else:
                 self.channel_layer.client_map = {
                     f"{self.project}_{self.client_id}": {self.channel_name}
@@ -88,7 +88,7 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         try:
-            self.channel_layer.client_map[f"{self.project}_{self.client_id}"].remove(
+            self.channel_layer.client_map[self.client_id].remove(
                 self.channel_name
             )
             self.channel_layer.group_discard(self.project, self.channel_name)
@@ -107,7 +107,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.send_by_client_id(
                     client_id=f"{self.project}_{recipient}",
                     message={
-                        "sender": self.client_id,
+                        "sender": self.id,
                         "message": text_data_json["message"],
                     },
                     sender_channel_name=self.channel_name,
@@ -118,7 +118,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "send_message",
                     "message": {
-                        "sender": self.client_id,
+                        "sender": self.id,
                         "message": text_data_json["message"],
                     },
                     "sender_channel_name": self.channel_name,

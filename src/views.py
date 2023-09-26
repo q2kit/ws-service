@@ -31,7 +31,7 @@ def create_example_token(request, secret_key):
     return HttpResponse(
         jwt.encode(
             {
-                "client_id": "123",
+                "id": "123",
             },
             secret_key,
             algorithm="HS256",
