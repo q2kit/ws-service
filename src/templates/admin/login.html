@@ -56,13 +56,13 @@
   {% url 'signup' as signup_url %}
   {% if signup_url %}
   <div class="signup-link">
-    <a href="{{ signup_url }}">Don't have an account?</a>
+    <a tabindex="-1" href="{{ signup_url }}">Don't have an account?</a>
   </div>
   {% endif %}
   {% url 'password_reset' as password_reset_url %}
   {% if password_reset_url %}
   <div class="password-reset-link">
-    <a href="{{ password_reset_url }}">{% translate 'Forgotten your password?' %}</a>
+    <a tabindex="-1" href="{{ password_reset_url }}">{% translate 'Forgotten your password?' %}</a>
   </div>
   {% endif %}
   <div class="submit-row">

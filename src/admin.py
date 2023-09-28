@@ -28,7 +28,7 @@ class ProjectInline(admin.TabularInline):
     created_at_display = created_at_display
 
     def get_secret_key_display(self, obj=None):
-        if obj:
+        if obj.pk:
             return obj.secret_key
         else:
             return "-"

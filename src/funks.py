@@ -134,7 +134,7 @@ def send_verify_email(request, user, token):
                     <p>Please click the link below to verify your email address.</p>
                     <a href="{VERIFY_URL}">{VERIFY_URL}</a>
                     <p>This link will expire in 30 minutes.</p>
-                    <p><i>If you did not request this, please ignore this email. Thank you :)</i></p>
+                    <p><i>If you did not request this, please ignore this email.</i></p>
                     <p>Thanks for using our site!</p>
                     <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
                 </body>
@@ -177,7 +177,7 @@ def send_password_reset_email(request, user, token):
                     <a href="{RESET_URL}">{RESET_URL}</a>
                     <p>Your username, in case you've forgotten: {username}</p>
                     <p>This link will expire in 5 minutes.</p>
-                    <p><i>If you did not request this, please ignore this email. Thank you :)</i></p>
+                    <p><i>If you did not request this, please ignore this email.</i></p>
                     <p>Thanks for using our site!</p>
                     <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
                 </body>
