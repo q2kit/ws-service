@@ -32,6 +32,7 @@ async def send_by_client_id(channel_layer, client_id, message, sender_channel_na
 
 ChannelLayer = import_string(CHANNEL_LAYERS["default"]["BACKEND"])
 ChannelLayer.send_by_client_id = send_by_client_id
+ChannelLayer.client_map = {}
 
 
 class WSConsumer(AsyncWebsocketConsumer):
@@ -62,19 +63,18 @@ class WSConsumer(AsyncWebsocketConsumer):
                     return
             
             payload = jwt.decode(token, project.secret_key, algorithms=["HS256"])
-            self.id = payload["id"]
+            if "id" not in payload:
+                await self.close()
+                return
+            for key, value in payload.items():
+                setattr(self, key, value)
             self.client_id = f"{self.project}_{self.id}"
             await self.channel_layer.group_add(self.project, self.channel_name)
 
-            if hasattr(self.channel_layer, "client_map"):
-                if self.client_id in self.channel_layer.client_map:
-                    self.channel_layer.client_map[self.client_id].add(self.channel_name)
-                else:
-                    self.channel_layer.client_map[self.client_id] = {self.channel_name}
+            if self.client_id in self.channel_layer.client_map:
+                self.channel_layer.client_map[self.client_id].add(self.channel_name)
             else:
-                self.channel_layer.client_map = {
-                    f"{self.project}_{self.client_id}": {self.channel_name}
-                }
+                self.channel_layer.client_map[self.client_id] = {self.channel_name}
 
             await self.accept()
 
@@ -103,9 +103,9 @@ class WSConsumer(AsyncWebsocketConsumer):
             if not isinstance(receivers, list):  # if receivers is not list
                 receivers = [receivers]  # convert to list of one element
 
-            for recipient in receivers:
+            for id in receivers:
                 await self.channel_layer.send_by_client_id(
-                    client_id=f"{self.project}_{recipient}",
+                    client_id=f"{self.project}_{id}",
                     message={
                         "sender": self.id,
                         "message": text_data_json["message"],

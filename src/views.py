@@ -48,7 +48,7 @@ def refresh_secret_key(request, project):
             Project.objects.get(name=project).refresh_secret_key()
         else:
             Project.objects.get(name=project, owner=request.user).refresh_secret_key()
-        messages.success(request, "Secret key refreshed successfully")
+        messages.success(request, "Successfully refreshed the secret key, but it only applies to new connections.")
         return HttpResponse("OK")
     except:
         return HttpResponse("NG", status=400)
@@ -124,8 +124,9 @@ def verify_email(request):
             user.save()
             messages.success(request, "Email verified successfully.")
             return redirect("/admin")
-        except:
-            raise Http404
+        except jwt.ExpiredSignatureError:
+            messages.error(request, "Verification link expired.")
+            return redirect("/admin")
         
     if request.user.is_authenticated:
         payload = {
