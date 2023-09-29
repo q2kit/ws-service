@@ -120,6 +120,8 @@ def send_verify_email(request, user, token):
         username = user.username
         SERVER_HOST = f"{request.scheme}://{request.get_host()}"
         VERIFY_URL = f"{SERVER_HOST}{reverse('verify')}?token={token}"
+        SMTP_HOST = os.environ.get("SMTP_HOST")
+        SMTP_PORT = os.environ.get("SMTP_PORT")
         SMTP_ACCOUNT = os.environ.get("SMTP_ACCOUNT")
         SMTP_PASS = os.environ.get("SMTP_PASS")
         SMTP_SENDER = os.environ.get("SMTP_SENDER")
@@ -147,7 +149,7 @@ def send_verify_email(request, user, token):
         msg["Subject"] = SUBJECT
         msg.attach(MIMEText(MESSAGE, "html"))
 
-        with smtplib.SMTP('smtp.mail.me.com', 587) as smtp:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
             smtp.ehlo()
             smtp.starttls()
             smtp.login(SMTP_ACCOUNT, SMTP_PASS)
@@ -162,6 +164,8 @@ def send_password_reset_email(request, user, token):
         username = user.username
         SERVER_HOST = f"{request.scheme}://{request.get_host()}"
         RESET_URL = f"{SERVER_HOST}{reverse('password_reset_confirm', kwargs={'token': token})}"
+        SMTP_HOST = os.environ.get("SMTP_HOST")
+        SMTP_PORT = os.environ.get("SMTP_PORT")
         SMTP_ACCOUNT = os.environ.get("SMTP_ACCOUNT")
         SMTP_PASS = os.environ.get("SMTP_PASS")
         SMTP_SENDER = os.environ.get("SMTP_SENDER")
@@ -190,7 +194,7 @@ def send_password_reset_email(request, user, token):
         msg["Subject"] = SUBJECT
         msg.attach(MIMEText(MESSAGE, "html"))
 
-        with smtplib.SMTP('smtp.mail.me.com', 587) as smtp:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
             smtp.ehlo()
             smtp.starttls()
             smtp.login(SMTP_ACCOUNT, SMTP_PASS)
