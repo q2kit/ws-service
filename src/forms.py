@@ -146,7 +146,7 @@ class ProjectFormSuperUser(ModelForm):
         labels = {
             "name": "Project Name",
             "description": "Description",
-            "allow_any_domain": "Allow Any Domain",
+            "allow_any_domain": "Allow any domain?",
             "owner": "Owner",
         }
         help_texts = {
