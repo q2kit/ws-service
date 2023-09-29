@@ -96,34 +96,37 @@ class WSConsumer(AsyncWebsocketConsumer):
             pass
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        if "receivers" in text_data_json:  # send to specific user
-            receivers = text_data_json["receivers"]
+        try:
+            text_data_json = json.loads(text_data)
+            if "receivers" in text_data_json:  # send to specific user
+                receivers = text_data_json["receivers"]
 
-            if not isinstance(receivers, list):  # if receivers is not list
-                receivers = [receivers]  # convert to list of one element
+                if not isinstance(receivers, list):  # if receivers is not list
+                    receivers = [receivers]  # convert to list of one element
 
-            for id in receivers:
-                await self.channel_layer.send_by_client_id(
-                    client_id=f"{self.project}_{id}",
-                    message={
-                        "sender": self.id,
-                        "message": text_data_json["message"],
+                for id in receivers:
+                    await self.channel_layer.send_by_client_id(
+                        client_id=f"{self.project}_{id}",
+                        message={
+                            "sender": self.id,
+                            "message": text_data_json["message"],
+                        },
+                        sender_channel_name=self.channel_name,
+                    )
+            else:  # send to all users if receivers is not specified
+                await self.channel_layer.group_send(
+                    self.project,
+                    {
+                        "type": "send_message",
+                        "message": {
+                            "sender": self.id,
+                            "message": text_data_json["message"],
+                        },
+                        "sender_channel_name": self.channel_name,
                     },
-                    sender_channel_name=self.channel_name,
                 )
-        else:  # send to all users if receivers is not specified
-            await self.channel_layer.group_send(
-                self.project,
-                {
-                    "type": "send_message",
-                    "message": {
-                        "sender": self.id,
-                        "message": text_data_json["message"],
-                    },
-                    "sender_channel_name": self.channel_name,
-                },
-            )
+        except:
+            pass
 
     async def send_message(self, event):
         if event["sender_channel_name"] != self.channel_name:
