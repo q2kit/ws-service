@@ -56,7 +56,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "src.middleware.log.RequestLoggerMiddleware",
-    "src.middleware.message.MessageMiddleware",
+    "src.middleware.message.VerifyEmailMessageMiddleware",
 ]
 
 AUTH_USER_MODEL = 'src.User'

@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from django.core.cache import cache
 
 
-class MessageMiddleware(MiddlewareMixin):
+class VerifyEmailMessageMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # check if message exists in request
         for msg_str in [msg.message for msg in messages.get_messages(request)]:

@@ -78,7 +78,7 @@ def signup(request):
                 target=send_verify_email,
                 args=(request, request.user, token),
             ).start()
-            return redirect("/admin")
+            return redirect("admin:index")
     else:
         form = RegistrationForm()
 
@@ -104,7 +104,10 @@ def verify_email(request):
             user = User.objects.get(id=user_id)
             if user.verified:
                 messages.warning(request, "Email already verified.")
-                return redirect("/admin")
+                if request.user.is_authenticated:
+                    return redirect("admin:index")
+                else:
+                    return redirect("admin:login")
             user.verified = True
             # grant permission
             content_type = ContentType.objects.get_for_models(Project, Domain)
@@ -123,7 +126,10 @@ def verify_email(request):
             user.user_permissions.set(permission)
             user.save()
             messages.success(request, "Email verified successfully.")
-            return redirect("/admin")
+            if request.user.is_authenticated:
+                return redirect("admin:index")
+            else:
+                return redirect("admin:login")
         except jwt.ExpiredSignatureError:
             messages.error(request, "Verification link expired.")
             return redirect("/admin")
@@ -144,7 +150,7 @@ def verify_email(request):
         try:
             return redirect(next)
         except:
-            return redirect('/admin')
+            return redirect("admin:index")
     else:
         raise Http404
 
