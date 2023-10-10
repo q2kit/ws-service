@@ -1,6 +1,7 @@
 from django.utils.html import format_html
 from django.utils import timezone
 from django.urls import reverse
+from django.core.cache import cache
 
 import re
 from datetime import timedelta
@@ -10,6 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import logging
+import jwt
 
 
 def secret_key_generator(length: int = 32) -> str:
@@ -201,3 +203,13 @@ def send_password_reset_email(request, user, token):
             smtp.sendmail(SMTP_SENDER, email, msg.as_string())
     except Exception as e:
         logging.error(f"Error sending password reset email. Email: {email} Error: {e}")
+
+
+def check_token_used(token):
+    return cache.get(f"token_used_{token}")
+
+
+def set_token_used(token):
+    expiration = jwt.decode(token, options={"verify_signature": False})["exp"]
+    now = timezone.now().timestamp()
+    cache.set(f"token_used_{token}", True, timeout=expiration - now)

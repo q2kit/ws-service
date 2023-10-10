@@ -15,7 +15,12 @@ from django.contrib.auth.forms import SetPasswordForm
 
 from src.forms import RegistrationForm, PasswordResetForm
 from src.models import Project, User, Domain
-from src.funks import send_verify_email, send_password_reset_email
+from src.funks import (
+    send_verify_email,
+    send_password_reset_email,
+    check_token_used,
+    set_token_used,
+)
 
 import jwt
 import threading
@@ -188,10 +193,10 @@ class PasswordResetConfirmView(PasswordContextMixin, FormView):
     def dispatch(self, *args, **kwargs):
         self.validlink = False
         self.user = None
-        token = kwargs.get('token')
-        if token:
+        self.token = kwargs.get('token')
+        if self.token and not check_token_used(self.token):
             try:
-                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+                payload = jwt.decode(self.token, settings.SECRET_KEY, algorithms=["HS256"])
                 user_id = payload.get("user_id")
                 user = User.objects.get(id=user_id)
                 self.user = user
@@ -226,4 +231,5 @@ class PasswordResetConfirmView(PasswordContextMixin, FormView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
+        set_token_used(self.token)
         return super().form_valid(form)
