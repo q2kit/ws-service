@@ -54,13 +54,12 @@ class WSConsumer(AsyncWebsocketConsumer):
             else:
                 domain = "Unknown"
 
-            if not project.allow_any_domains:
-                if not await sync_to_async(lambda domain, project: Domain.objects.filter(domain=domain, project=project).exists())(domain, project):
-                    logging.error(
-                        f"Domain: {domain} - Project: {self.project} - Not found"
-                    )
-                    await self.close()
-                    return
+            if not await sync_to_async(project.check_domain_allowed)(domain):
+                logging.error(
+                    f"Domain: {domain} - Project: {self.project} - Not allowed"
+                )
+                await self.close()
+                return
             
             payload = jwt.decode(token, project.secret_key, algorithms=["HS256"])
             if "id" not in payload:
