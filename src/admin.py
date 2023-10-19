@@ -38,7 +38,7 @@ class ProjectInline(admin.TabularInline):
 
 class DomainInline(admin.TabularInline):
     model = Domain
-    fields = ("domain", "project", "created_at_display", "updated_at_display")
+    fields = ("domain", "project", "type", "created_at_display", "updated_at_display")
     readonly_fields = ("created_at_display", "updated_at_display")
     extra = 0
     ordering = ("created_at",)
@@ -46,7 +46,7 @@ class DomainInline(admin.TabularInline):
     created_at_display = created_at_display
     updated_at_display = updated_at_display
     form = DomainForm
-    verbose_name = "Whitelisted Domain"
+    verbose_name_plural = "Domain Management"
 
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -124,22 +124,22 @@ class ProjectAdmin(admin.ModelAdmin):
                     "owner_display",
                     "description",
                     "secret_key",
-                    "allow_any_domain",
+                    "allow_any_domains",
                     ("created_at", "updated_at"),
                 )
             else:
-                return ("name", "owner", "description", "allow_any_domain")
+                return ("name", "owner", "description", "allow_any_domains")
         else:
             if obj:
                 return (
                     "name",
                     "description",
                     "secret_key",
-                    "allow_any_domain",
+                    "allow_any_domains",
                     ("created_at", "updated_at"),
                 )
             else:
-                return ("name", "description", "allow_any_domain")
+                return ("name", "description", "allow_any_domains")
             
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:

@@ -54,7 +54,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             else:
                 domain = "Unknown"
 
-            if not project.allow_any_domain:
+            if not project.allow_any_domains:
                 if not await sync_to_async(lambda domain, project: Domain.objects.filter(domain=domain, project=project).exists())(domain, project):
                     logging.error(
                         f"Domain: {domain} - Project: {self.project} - Not found"

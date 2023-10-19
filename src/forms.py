@@ -107,16 +107,16 @@ class DomainForm(ModelForm):
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ("name", "description", "allow_any_domain")
+        fields = ("name", "description", "allow_any_domains")
         labels = {
             "name": "Project Name",
             "description": "Description",
-            "allow_any_domain": "Allow any domain?",
+            "allow_any_domains": "Allow any domains?",
         }
         help_texts = {
             "name": "Enter project name",
             "description": "Enter project description",
-            "allow_any_domain": "Allow any domain to access this project",
+            "allow_any_domains": "Allow any domains, but still exclude blacklisted domains.",
         }
         error_messages = {
             "name": {
@@ -142,17 +142,17 @@ class ProjectForm(ModelForm):
 class ProjectFormSuperUser(ModelForm):
     class Meta:
         model = Project
-        fields = ("name", "description", "allow_any_domain")
+        fields = ("name", "description", "allow_any_domains")
         labels = {
             "name": "Project Name",
             "description": "Description",
-            "allow_any_domain": "Allow any domain?",
+            "allow_any_domains": "Allow any domains?",
             "owner": "Owner",
         }
         help_texts = {
             "name": "Enter project name",
             "description": "Enter project description",
-            "allow_any_domain": "Allow any domain to access this project",
+            "allow_any_domains": "Allow any domains to access this project",
             "owner": "Select project owner",
         }
 
@@ -173,7 +173,7 @@ class ProjectFormSuperUser(ModelForm):
 
 class ProjectAddFormSuperUser(ProjectFormSuperUser):
     class Meta(ProjectFormSuperUser.Meta):
-        fields = ("name", "description", "allow_any_domain", "owner")
+        fields = ("name", "description", "allow_any_domains", "owner")
         
     owner = forms.ModelChoiceField(
         queryset=User.objects.all(),

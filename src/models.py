@@ -29,7 +29,7 @@ class Project(models.Model):
         related_name="projects"
     )
     secret_key = models.CharField(max_length=100, default=secret_key_generator, editable=False)
-    allow_any_domain = models.BooleanField(default=False)
+    allow_any_domains = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -51,6 +51,14 @@ class Domain(models.Model):
     domain = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    type  = models.CharField(
+        max_length=10,
+        choices=(
+            ("whitelist", "Whitelist"),
+            ("blacklist", "Blacklist"),
+        ),
+        default="whitelist",
+    )
 
     def __str__(self) -> str:
         return f"{self.project.name} - {self.domain}"
