@@ -33,10 +33,10 @@ def validate_domain(domain: str) -> tuple[str, str]:
         domain = domain[:-1]
     if domain == "localhost":
         return domain, None
-    if re.match(r"^[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", domain):
+    if re.match(r"^(?:\*\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$", domain):
         return domain, None
     else:
-        return domain, "Invalid domain. (example.com or sub.example.com or localhost)"
+        return domain, "Invalid domain. (example.com or sub.example.com or *.example.com or *.com or localhost)"
     
 
 def validate_project_name(name: str) -> tuple[str, str]:

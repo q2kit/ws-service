@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from src.funks import secret_key_generator
 
+import re
+
 
 class User(AbstractUser):
     verified = models.BooleanField(default=False)
@@ -43,8 +45,22 @@ class Project(models.Model):
         self.secret_key = secret_key_generator()
         self.save()
 
+    def check_domain_allowed(self, domain):
+        blacklist = self.domains.filter(type=Domain.BLACKLIST).values_list("domain", flat=True)
+        blacklist = [re.escape(item).replace(r'\*', r'[a-zA-Z0-9.-]*') for item in blacklist]
+        not_in_blacklist = not any(re.match(item, domain) for item in blacklist)
+        in_whitelist = Domain.objects.filter(
+            domain=domain,
+            project=self,
+            type=Domain.WHILELIST
+        ).exists()
+        return not_in_blacklist and (in_whitelist or self.allow_any_domains)
+
 
 class Domain(models.Model):
+    WHILELIST = "whitelist"
+    BLACKLIST = "blacklist"
+    
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="domains"
     )
