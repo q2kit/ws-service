@@ -186,7 +186,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "file",
             "filename": os.path.join(LOGGING_DIR, "ws-service.log"),
-            "maxBytes": 1024 * 1024 * 1,  # 1 MB per file
+            "maxBytes": 1024 * 1024 * 0.1, # 0.1 MB per file
             "backupCount": 5,
             "encoding": "utf8",
             "delay": False,

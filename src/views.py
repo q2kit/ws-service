@@ -108,10 +108,11 @@ def verify_email(request):
             user_id = payload.get("user_id")
             user = User.objects.get(id=user_id)
             if user.verified:
-                messages.warning(request, "Email already verified.")
                 if request.user.is_authenticated:
+                    messages.warning(request, f"Email already verified for {user.username}.")
                     return redirect("admin:index")
                 else:
+                    messages.warning(request, "Email already verified.")
                     return redirect("admin:login")
             user.verified = True
             # grant permission
@@ -130,10 +131,14 @@ def verify_email(request):
             )
             user.user_permissions.set(permission)
             user.save()
-            messages.success(request, "Email verified successfully.")
             if request.user.is_authenticated:
+                if user == request.user:
+                    messages.success(request, "Email verified successfully.")
+                else:
+                    messages.warning(request, f"Email already verified for {user.username}.")
                 return redirect("admin:index")
             else:
+                messages.success(request, "Email verified successfully.")
                 return redirect("admin:login")
         except jwt.ExpiredSignatureError:
             messages.error(request, "Verification link expired.")
