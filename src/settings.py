@@ -60,6 +60,9 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'src.User'
+AUTHENTICATION_BACKENDS = [
+    "src.backends.EmailLoginBackend",
+]
 
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/admin/'
