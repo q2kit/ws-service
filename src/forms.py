@@ -89,11 +89,10 @@ class DomainForm(ModelForm):
                 "unique_together": "Domain already exists in this project.",
             },
         }
-    
-    domain = forms.CharField(
-        label=_("Domain"),
-        widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
-    )
+        widgets = {
+            "domain": forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
+        }
+
 
     def clean_domain(self):
         domain = self.cleaned_data.get("domain")
@@ -123,11 +122,9 @@ class ProjectForm(ModelForm):
                 "unique": "Project with this name already exists.",
             },
         }
-
-    name = forms.CharField(
-        label=_("Project Name"),
-        widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
-    )
+        widgets = {
+            "name": forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
+        }
 
     def clean_name(self):
         name = self.cleaned_data.get("name")
@@ -155,11 +152,10 @@ class ProjectFormSuperUser(ModelForm):
             "allow_any_domains": "Allow any domains to access this project",
             "owner": "Select project owner",
         }
+        widgets = {
+            "name": forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
+        }
 
-    name = forms.CharField(
-        label=_("Project Name"),
-        widget=forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
-    )
 
     def clean_name(self):
         name = self.cleaned_data.get("name")
