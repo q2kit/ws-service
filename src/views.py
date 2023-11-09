@@ -75,14 +75,11 @@ def signup(request):
             messages.success(request, "Signup successful.")
             messages.warning(request, "Check your email to authenticate your account before you can use the service.")
             cache.set(f"verify_email_notice_{user.id}", True, 30)
-            payload = {
-                "user_id": request.user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=30),
-            }
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            verify_code = secrets.token_hex(48)
+            cache.set(f"verify_email_code_{user.id}", verify_code, 1800)
             threading.Thread(
                 target=send_verify_email,
-                args=(request, request.user, token),
+                args=(request, request.user, verify_code),
             ).start()
             return redirect("admin:index")
     else:
@@ -126,13 +123,14 @@ def verify_email(request):
                         args=(request, request.user, verify_code),
                     ).start()
                     messages.success(request, f"Verification email sent to {request.user.email}")
+                # finally
+                try:
+                    next = request.GET.get('next')
+                    return redirect(next)
+                except:
+                    return redirect("admin:index")
             else:
                 raise Http404
-            try:
-                next = request.GET.get('next')
-                return redirect(next)
-            except:
-                return redirect("admin:index")
         else:
             raise Http404
     elif request.method == "POST":
@@ -167,8 +165,8 @@ def verify_email(request):
             else:
                 messages.success(request, "Email verified successfully.")
                 return redirect("admin:login")
-        except Exception as e:
-            logging.error(f"Verify email failed. Error: {e}")
+        except Exception:
+            logging.error(f"Verify email failed. Error: Invalid verify code.")
             messages.error(request, "Verification failed. Make sure you have the correct link.")
             return redirect("admin:index")
 
