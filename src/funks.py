@@ -116,12 +116,12 @@ def updated_at_display(self, obj=None):
 updated_at_display.short_description = "Updated At"
 
 
-def send_verify_email(request, user, token):
+def send_verify_email(request, user, verify_code):
     try:
         email = user.email
         username = user.username
         SERVER_HOST = f"{request.scheme}://{request.get_host()}"
-        VERIFY_URL = f"{SERVER_HOST}{reverse('verify')}?token={token}"
+        VERIFY_URL = f"{SERVER_HOST}{reverse('verify')}?verify_code={verify_code}"
         SMTP_HOST = os.environ.get("SMTP_HOST")
         SMTP_PORT = os.environ.get("SMTP_PORT")
         SMTP_ACCOUNT = os.environ.get("SMTP_ACCOUNT")

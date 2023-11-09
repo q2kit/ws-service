@@ -26,6 +26,7 @@ import jwt
 import threading
 from datetime import datetime, timedelta
 import logging
+import secrets
 
 
 def index(request):
@@ -73,7 +74,7 @@ def signup(request):
             login(request, user)
             messages.success(request, "Signup successful.")
             messages.warning(request, "Check your email to authenticate your account before you can use the service.")
-            cache.set(f"verify_email_{user.id}", True, 30)
+            cache.set(f"verify_email_notice_{user.id}", True, 30)
             payload = {
                 "user_id": request.user.id,
                 "exp": datetime.utcnow() + timedelta(minutes=30),
@@ -101,19 +102,44 @@ def signup(request):
 
 
 def verify_email(request):
-    token = request.GET.get("token")
-    if token:
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user_id = payload.get("user_id")
-            user = User.objects.get(id=user_id)
-            if user.verified:
-                if request.user.is_authenticated:
-                    messages.warning(request, f"Email already verified for {user.username}.")
-                    return redirect("admin:index")
+    if request.method == "GET":
+        verify_code = request.GET.get("verify_code")
+        if verify_code: # verify email
+            return render(
+                request=request,
+                template_name="verify_email.html",
+                context={
+                    "verify_code": verify_code,
+                }
+            )
+        elif request.user.is_authenticated: # generate new code and send email
+            if not request.user.verified:
+                if cache.get(f"verify_email_code_{request.user.id}"):
+                    messages.warning(request, "You have already requested a verification email. Please check your inbox or spam folder. If you have not received it, please wait a few minutes and try again.")
                 else:
-                    messages.warning(request, "Email already verified.")
-                    return redirect("admin:login")
+                    verify_code = secrets.token_hex(48)
+                    cache.set(f"verify_email_code_{request.user.id}", verify_code, 1800)
+                    cache.set(f"verify_email_notice_{request.user.id}", True, 30)
+                    cache.set(verify_code, request.user.id, 1800)
+                    threading.Thread(
+                        target=send_verify_email,
+                        args=(request, request.user, verify_code),
+                    ).start()
+                    messages.success(request, f"Verification email sent to {request.user.email}")
+            else:
+                raise Http404
+            try:
+                next = request.GET.get('next')
+                return redirect(next)
+            except:
+                return redirect("admin:index")
+        else:
+            raise Http404
+    elif request.method == "POST":
+        try:
+            verify_code = request.POST.get("verify_code")
+            user_id = cache.get(verify_code)
+            user = User.objects.get(id=user_id)
             user.verified = True
             # grant permission
             content_type = ContentType.objects.get_for_models(Project, Domain)
@@ -131,6 +157,7 @@ def verify_email(request):
             )
             user.user_permissions.set(permission)
             user.save()
+            cache.delete(verify_code)
             if request.user.is_authenticated:
                 if user == request.user:
                     messages.success(request, "Email verified successfully.")
@@ -140,30 +167,10 @@ def verify_email(request):
             else:
                 messages.success(request, "Email verified successfully.")
                 return redirect("admin:login")
-        except jwt.ExpiredSignatureError:
-            messages.error(request, "Verification link expired.")
-            return redirect("/admin")
-        
-    if request.user.is_authenticated:
-        payload = {
-            "user_id": request.user.id,
-            "exp": datetime.utcnow() + timedelta(minutes=30),
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-        threading.Thread(
-            target=send_verify_email,
-            args=(request, request.user, token),
-        ).start()
-        messages.success(request, f"Verification email sent to {request.user.email}")
-        cache.set(f"verify_email_{request.user.id}", True, 60)
-        next = request.GET.get('next')
-        try:
-            return redirect(next)
-        except:
+        except Exception as e:
+            logging.error(f"Verify email failed. Error: {e}")
+            messages.error(request, "Verification failed. Make sure you have the correct link.")
             return redirect("admin:index")
-    else:
-        raise Http404
-
 
 class PasswordResetView(PasswordContextMixin, FormView):
     form_class = PasswordResetForm

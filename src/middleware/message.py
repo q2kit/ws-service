@@ -32,5 +32,5 @@ class VerifyEmailMessageMiddleware(MiddlewareMixin):
         should = [request.user.is_authenticated and not request.user.verified]
         should.append(request.path not in except_paths)
         should.append(not any(keyword in request.path for keyword in except_keywords))
-        should.append(cache.get(f"verify_email_{request.user.id}") is None)
+        should.append(cache.get(f"verify_email_notice_{request.user.id}") is None)
         return all(should)
