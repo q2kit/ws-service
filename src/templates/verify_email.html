@@ -1,0 +1,13 @@
+<html>
+  <body>
+    <form action="" method="post" id="verify_form">
+      {% csrf_token %}
+      <input type="hidden" name="verify_code" value="{{ verify_code }}" />
+    </form>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('verify_form').submit()
+      })
+    </script>
+  </body>
+</html>
