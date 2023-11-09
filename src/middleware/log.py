@@ -19,7 +19,7 @@ class RequestLoggerMiddleware(MiddlewareMixin):
         ip, _ = get_client_ip(request)
 
         logging.info(
-            f"IP: {ip} - User: {request.user} - {request.method} - {request.path}"
+            f"IP: {ip} - User: {request.user} - {request.method} - {request.get_full_path()}"
         )
 
     def process_exception(self, request, exception):
@@ -34,5 +34,5 @@ class RequestLoggerMiddleware(MiddlewareMixin):
         ip, _ = get_client_ip(request)
 
         logging.error(
-            f"IP: {ip} - User: {request.user} - {request.method} - {request.path} - {exception}"
+            f"IP: {ip} - User: {request.user} - {request.method} - {request.get_full_path()} - {exception}"
         )
