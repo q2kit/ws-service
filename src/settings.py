@@ -99,7 +99,10 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")],
+            "hosts": [
+                (f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}") if REDIS_PASS else
+                (f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
+            ],
         },
     },
 }
