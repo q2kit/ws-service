@@ -31,12 +31,16 @@ def validate_domain(domain: str) -> tuple[str, str]:
         domain = domain[len("https://") :]
     if domain.endswith("/"):
         domain = domain[:-1]
-    if domain == "localhost":
-        return domain, None
-    if re.match(r"^(?:\*\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$", domain):
+    domain = domain.split(":")[0]
+    if re.match(r"^[a-z0-9-]+$", domain):
+        if domain == "localhost":
+            return domain, None
+        else:
+            return domain, "E.g. example.com, sub.example.com, *.example.com, *.com or localhost"
+    elif re.match(r"^(?:\*\.)?([a-z0-9-]+\.)*([a-z]+)$", domain):
         return domain, None
     else:
-        return domain, "Invalid domain. (example.com or sub.example.com or *.example.com or *.com or localhost)"
+        return domain, "E.g. example.com, sub.example.com, *.example.com, *.com or localhost"
     
 
 def validate_project_name(name: str) -> tuple[str, str]:

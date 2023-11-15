@@ -82,7 +82,7 @@ class DomainForm(ModelForm):
             "domain": "Domain",
         }
         help_texts = {
-            "domain": "Enter domain name",
+            "domain": "E.g. example.com, sub.example.com, *.example.com, *.com or localhost",
         }
         error_messages = {
             NON_FIELD_ERRORS: {
