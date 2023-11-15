@@ -64,8 +64,8 @@ AUTHENTICATION_BACKENDS = [
     "src.backends.EmailLoginBackend",
 ]
 
-LOGIN_REDIRECT_URL = '/admin/'
-LOGOUT_REDIRECT_URL = '/admin/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/dashboard/'
 
 ROOT_URLCONF = "src.urls"
 
