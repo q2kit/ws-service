@@ -74,9 +74,10 @@ def signup(request):
             login(request, user)
             messages.success(request, "Signup successful.")
             messages.warning(request, "Check your email to authenticate your account before you can use the service.")
-            cache.set(f"verify_email_notice_{user.id}", True, 30)
             verify_code = secrets.token_hex(48)
             cache.set(f"verify_email_code_{user.id}", verify_code, 1800)
+            cache.set(f"verify_email_notice_{user.id}", True, 30)
+            cache.set(verify_code, request.user.id, 1800)
             threading.Thread(
                 target=send_verify_email,
                 args=(request, request.user, verify_code),
