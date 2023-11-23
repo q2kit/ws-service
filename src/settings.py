@@ -30,7 +30,7 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = eval(os.environ["ALLOWED_HOSTS"])
+ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = eval(os.environ["CSRF_TRUSTED_ORIGINS"])
 
 # Application definition
