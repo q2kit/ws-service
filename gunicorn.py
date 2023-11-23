@@ -5,4 +5,5 @@ reload = False
 accesslog = errorlog = None
 loglevel = ""
 capture_output = False
-daemon = True
+daemon = False
+proc_name = "ws-service"
