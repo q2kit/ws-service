@@ -1,7 +1,6 @@
 version: '3.3'
 services:
   wss-backend:
-    image: q2kit/wss-backend:1.0
     container_name: wss-backend
     build: .
     ports:
