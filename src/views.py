@@ -33,18 +33,6 @@ def index(request):
     return redirect("admin:index")
 
 
-def create_example_token(request, secret_key):
-    return HttpResponse(
-        jwt.encode(
-            {
-                "id": "123",
-            },
-            secret_key,
-            algorithm="HS256",
-        )
-    )
-
-
 @csrf_exempt
 def refresh_secret_key(request, project):
     if request.method != "POST":

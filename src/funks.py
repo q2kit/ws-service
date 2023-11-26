@@ -1,4 +1,5 @@
 from django.utils.html import format_html
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.urls import reverse
 from django.core.cache import cache
@@ -133,21 +134,12 @@ def send_verify_email(request, user, verify_code):
         SMTP_SENDER = os.environ.get("SMTP_SENDER")
         SENDER_NAME = os.environ.get("SENDER_NAME")
         SUBJECT = "Verify your email"
-        MESSAGE = f"""
-            <html>
-                <head></head>
-                <body style="font-size: 14px">
-                    <p>Hi, {username}!</p>
-                    <p>Thank you for signing up to <a href="{SERVER_HOST}">Websocket Service</a>.</p>
-                    <p>Please click the link below to verify your email address.</p>
-                    <a href="{VERIFY_URL}">{VERIFY_URL}</a>
-                    <p>This link will expire in 30 minutes.</p>
-                    <p><i>If you did not request this, please ignore this email.</i></p>
-                    <p>Thanks for using our site!</p>
-                    <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
-                </body>
-            </html>
-        """
+        context = {
+            "SERVER_HOST": SERVER_HOST,
+            "VERIFY_URL": VERIFY_URL,
+            "username": username,
+        }
+        MESSAGE = render_to_string("verify_email_template.html", context)
 
         msg = MIMEMultipart()
         msg["From"] = formataddr((SENDER_NAME, SMTP_SENDER))
@@ -177,22 +169,12 @@ def send_password_reset_email(request, user, token):
         SMTP_SENDER = os.environ.get("SMTP_SENDER")
         SENDER_NAME = os.environ.get("SENDER_NAME")
         SUBJECT = "Reset your password"
-        MESSAGE = f"""
-            <html>
-                <head></head>
-                <body style="font-size: 14px">
-                    <p>Hello,
-                    <p>You'ra receiving this email because you requested a password reset for your user account at <a href="{SERVER_HOST}">Websocket Service</a>.</p>
-                    <p>Please click the link below to reset your password.</p>
-                    <a href="{RESET_URL}">{RESET_URL}</a>
-                    <p>Your username, in case you've forgotten: {username}</p>
-                    <p>This link will expire in 5 minutes.</p>
-                    <p><i>If you did not request this, please ignore this email.</i></p>
-                    <p>Thanks for using our site!</p>
-                    <p>The <a href="{SERVER_HOST}">Websocket Service</a> team.</p>
-                </body>
-            </html>
-        """
+        context = {
+            "SERVER_HOST": SERVER_HOST,
+            "RESET_URL": RESET_URL,
+            "username": username,
+        }
+        MESSAGE = render_to_string("password_reset_email_template.html", context)
 
         msg = MIMEMultipart()
         msg["From"] = formataddr((SENDER_NAME, SMTP_SENDER))

@@ -70,10 +70,10 @@ class Domain(models.Model):
     type  = models.CharField(
         max_length=10,
         choices=(
-            ("whitelist", "Whitelist"),
-            ("blacklist", "Blacklist"),
+            (WHILELIST, "Whitelist"),
+            (BLACKLIST, "Blacklist"),
         ),
-        default="whitelist",
+        default=WHILELIST,
     )
 
     def __str__(self) -> str:
