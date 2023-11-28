@@ -72,7 +72,6 @@ class RegistrationForm(forms.Form):
             )
         return password2
 
-        
 
 class DomainForm(ModelForm):
     class Meta:

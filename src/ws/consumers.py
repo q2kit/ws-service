@@ -1,6 +1,6 @@
 # ws/consumers.py
 from src.settings import CHANNEL_LAYERS
-from src.models import Project, Domain
+from src.models import Project
 from src.funks import validate_domain
 
 from channels.generic.websocket import AsyncWebsocketConsumer
