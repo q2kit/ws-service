@@ -93,7 +93,7 @@ def verify_email(request):
         if verify_code: # verify email
             return render(
                 request=request,
-                template_name="verify_email.html",
+                template_name="verify_email_redirect_confirm.html",
                 context={
                     "verify_code": verify_code,
                 }
