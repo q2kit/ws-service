@@ -174,7 +174,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def owner_display(self, obj):
         if obj.owner:
-            link = reverse("admin:src_user_change", args=[obj.owner.id])
+            link = reverse("dashboard:src_user_change", args=[obj.owner.id])
             return format_html('<b><a href="{}">{}</a></b>', link, obj.owner.username)
         else:
             return "-"
@@ -235,8 +235,8 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 
 class CustomAdminSite(admin.AdminSite):
-    site_header = "Websocket Service Admin"
-    site_title = "Websocket Service Admin Portal"
+    site_header = "Websocket Service Dashboard"
+    site_title = "Websocket Service Dashboard"
     index_title = "Welcome to Websocket Service Portal"
     site_url = None
 
@@ -305,7 +305,7 @@ class CustomAdminSite(admin.AdminSite):
         return urlpatterns
 
 
-admin_site = CustomAdminSite(name="admin")
+dashboard_site = CustomAdminSite(name="dashboard")
 
-admin_site.register(User, CustomUserAdmin)
-admin_site.register(Project, ProjectAdmin)
+dashboard_site.register(User, CustomUserAdmin)
+dashboard_site.register(Project, ProjectAdmin)

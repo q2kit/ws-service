@@ -9,7 +9,7 @@ from src.views import (
     signup,
     verify_email,
 )
-from src.admin import admin_site
+from src.admin import dashboard_site
 
 
 urlpatterns = [
@@ -30,7 +30,7 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm"
     ),
-    path("dashboard/", admin_site.urls),
+    path("dashboard/", dashboard_site.urls),
     path("signup/", signup, name="signup"),
     path("verify", verify_email, name="verify"),
 ]

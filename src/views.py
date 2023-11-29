@@ -30,7 +30,7 @@ import secrets
 
 
 def index(request):
-    return redirect("admin:index")
+    return redirect("dashboard:index")
 
 
 @csrf_exempt
@@ -70,7 +70,7 @@ def signup(request):
                 target=send_verify_email,
                 args=(request, request.user, verify_code),
             ).start()
-            return redirect("admin:index")
+            return redirect("dashboard:index")
     else:
         form = RegistrationForm()
 
@@ -80,9 +80,9 @@ def signup(request):
         {
             "form": form,
             "username": request.user.username,
-            "site_header": "Websocket Service Admin",
+            "site_header": "Websocket Service Dashboard",
             "signup_url": reverse_lazy("signup"),
-            "login_url": reverse_lazy("admin:login"),
+            "login_url": reverse_lazy("dashboard:login"),
         }
     )
 
@@ -117,7 +117,7 @@ def verify_email(request):
                     next = request.GET.get('next')
                     return redirect(next)
                 except:
-                    return redirect("admin:index")
+                    return redirect("dashboard:index")
             else:
                 raise Http404
         else:
@@ -150,14 +150,14 @@ def verify_email(request):
                     messages.success(request, "Email verified successfully.")
                 else:
                     messages.warning(request, f"Email already verified for {user.username}.")
-                return redirect("admin:index")
+                return redirect("dashboard:index")
             else:
                 messages.success(request, "Email verified successfully.")
-                return redirect("admin:login")
+                return redirect("dashboard:login")
         except Exception:
             logging.error(f"Verify email failed. Error: Invalid verify code.")
             messages.error(request, "Verification failed. Make sure you have the correct link.")
-            return redirect("admin:index")
+            return redirect("dashboard:index")
 
 class PasswordResetView(PasswordContextMixin, FormView):
     form_class = PasswordResetForm
@@ -185,7 +185,7 @@ class PasswordResetView(PasswordContextMixin, FormView):
 
 class PasswordResetConfirmView(PasswordContextMixin, FormView):
     template_name = "registration/password_reset_confirm.html"
-    success_url = "/admin"
+    success_url = "/dashboard/"
     form_class = SetPasswordForm
     title = _("Enter new password")
 

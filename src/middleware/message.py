@@ -24,9 +24,10 @@ class VerifyEmailMessageMiddleware(MiddlewareMixin):
         except_paths = [
             reverse('signup'),
             reverse('verify'),
+            reverse('dashboard:jsi18n'),
         ]
         except_keywords = [
-            'admin/jsi18n',
+            # 'jsi18n',
             'password_reset',
         ]
         should = [request.user.is_authenticated and not request.user.verified]
