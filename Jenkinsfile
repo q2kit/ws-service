@@ -33,7 +33,7 @@ pipeline {
       steps {
         script {
           echo 'Running tests...'
-          sh 'docker run --rm --name wss-backend-test --network ws-service_default q2kit/wss-backend:1.0 python manage.py test'
+          sh 'docker run --rm --name wss-backend-test --network ws-service_default q2kit/wss-backend:${WSS_TAG} python manage.py test'
         }
       }
     }
