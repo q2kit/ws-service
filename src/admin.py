@@ -54,7 +54,6 @@ class ProjectAdmin(admin.ModelAdmin):
     class Media:
         css = {
             "all": (
-                "css/refresh_secret_key.css",
                 "css/fontawesome.css",
             )
         }
