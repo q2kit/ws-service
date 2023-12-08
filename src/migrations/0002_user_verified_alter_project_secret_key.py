@@ -7,18 +7,20 @@ import src.funks
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('src', '0001_initial'),
+        ("src", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='verified',
+            model_name="user",
+            name="verified",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='secret_key',
-            field=models.CharField(default=src.funks.secret_key_generator, editable=False, max_length=100),
+            model_name="project",
+            name="secret_key",
+            field=models.CharField(
+                default=src.funks.secret_key_generator, editable=False, max_length=100
+            ),
         ),
     ]

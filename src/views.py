@@ -42,7 +42,10 @@ def refresh_secret_key(request, project):
             Project.objects.get(name=project).refresh_secret_key()
         else:
             Project.objects.get(name=project, owner=request.user).refresh_secret_key()
-        messages.success(request, "Successfully refreshed the secret key, but it only applies to new connections.")
+        messages.success(
+            request,
+            "Successfully refreshed the secret key, but it only applies to new connections.",
+        )
         return HttpResponse("OK")
     except:
         return HttpResponse("NG", status=400)
@@ -61,7 +64,10 @@ def signup(request):
             )
             login(request, user)
             messages.success(request, "Signup successful.")
-            messages.warning(request, "Check your email to authenticate your account before you can use the service.")
+            messages.warning(
+                request,
+                "Check your email to authenticate your account before you can use the service.",
+            )
             verify_code = secrets.token_hex(48)
             cache.set(f"verify_email_code_{user.id}", verify_code, 1800)
             cache.set(f"verify_email_notice_{user.id}", True, 30)
@@ -83,25 +89,28 @@ def signup(request):
             "site_header": "Websocket Service Dashboard",
             "signup_url": reverse_lazy("signup"),
             "login_url": reverse_lazy("dashboard:login"),
-        }
+        },
     )
 
 
 def verify_email(request):
     if request.method == "GET":
         verify_code = request.GET.get("verify_code")
-        if verify_code: # verify email
+        if verify_code:  # verify email
             return render(
                 request=request,
                 template_name="verify_email_redirect_confirm.html",
                 context={
                     "verify_code": verify_code,
-                }
+                },
             )
-        elif request.user.is_authenticated: # generate new code and send email
+        elif request.user.is_authenticated:  # generate new code and send email
             if not request.user.verified:
                 if cache.get(f"verify_email_code_{request.user.id}"):
-                    messages.warning(request, "You have already requested a verification email. Please check your inbox or spam folder. If you have not received it, please wait a few minutes and try again.")
+                    messages.warning(
+                        request,
+                        "You have already requested a verification email. Please check your inbox or spam folder. If you have not received it, please wait a few minutes and try again.",  # noqa: E501
+                    )
                 else:
                     verify_code = secrets.token_hex(48)
                     cache.set(f"verify_email_code_{request.user.id}", verify_code, 1800)
@@ -114,7 +123,7 @@ def verify_email(request):
                     messages.success(request, f"Verification email sent to {request.user.email}")
                 # finally
                 try:
-                    next = request.GET.get('next')
+                    next = request.GET.get("next")
                     return redirect(next)
                 except:
                     return redirect("dashboard:index")
@@ -155,9 +164,10 @@ def verify_email(request):
                 messages.success(request, "Email verified successfully.")
                 return redirect("dashboard:login")
         except Exception:
-            logging.error(f"Verify email failed. Error: Invalid verify code.")
+            logging.error("Verify email failed. Error: Invalid verify code.")
             messages.error(request, "Verification failed. Make sure you have the correct link.")
             return redirect("dashboard:index")
+
 
 class PasswordResetView(PasswordContextMixin, FormView):
     form_class = PasswordResetForm
@@ -192,7 +202,7 @@ class PasswordResetConfirmView(PasswordContextMixin, FormView):
     def dispatch(self, *args, **kwargs):
         self.validlink = False
         self.user = None
-        self.token = kwargs.get('token')
+        self.token = kwargs.get("token")
         if self.token and not check_token_used(self.token):
             try:
                 payload = jwt.decode(self.token, settings.SECRET_KEY, algorithms=["HS256"])
@@ -221,12 +231,12 @@ class PasswordResetConfirmView(PasswordContextMixin, FormView):
                 }
             )
         return context
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.user
         return kwargs
-    
+
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)

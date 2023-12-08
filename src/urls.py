@@ -14,21 +14,17 @@ from src.admin import dashboard_site
 
 urlpatterns = [
     path("", index, name="index"),
-    path(
-        "api/refresh_secret_key/<str:project>/",
-        refresh_secret_key,
-        name="refresh_secret_key"
-    ),
+    path("api/refresh_secret_key/<str:project>/", refresh_secret_key, name="refresh_secret_key"),
     path("dashboard/password_reset/", PasswordResetView.as_view(), name="password_reset"),
     path(
         "dashboard/password_reset/done/",
         PasswordResetDoneView.as_view(),
-        name="password_reset_done"
+        name="password_reset_done",
     ),
     path(
         "dashboard/password_reset/<str:token>/",
         PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm"
+        name="password_reset_confirm",
     ),
     path("dashboard/", dashboard_site.urls),
     path("signup/", signup, name="signup"),

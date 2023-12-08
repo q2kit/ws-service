@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('src', '0002_user_verified_alter_project_secret_key'),
+        ("src", "0002_user_verified_alter_project_secret_key"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='project',
-            old_name='allow_any_domain',
-            new_name='allow_any_domains',
+            model_name="project",
+            old_name="allow_any_domain",
+            new_name="allow_any_domains",
         ),
         migrations.AddField(
-            model_name='domain',
-            name='type',
-            field=models.CharField(choices=[('whitelist', 'Whitelist'), ('blacklist', 'Blacklist')], default='whitelist', max_length=10),
+            model_name="domain",
+            name="type",
+            field=models.CharField(
+                choices=[("whitelist", "Whitelist"), ("blacklist", "Blacklist")],
+                default="whitelist",
+                max_length=10,
+            ),
         ),
     ]

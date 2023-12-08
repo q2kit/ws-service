@@ -27,9 +27,9 @@ def secret_key_generator(length: int = 32) -> str:
 def validate_domain(domain: str) -> tuple[str, str]:
     domain = domain.lower()
     if domain.startswith("http://"):
-        domain = domain[len("http://") :]
+        domain = domain[len("http://") :]  # noqa: E203
     elif domain.startswith("https://"):
-        domain = domain[len("https://") :]
+        domain = domain[len("https://") :]  # noqa: E203
     if domain.endswith("/"):
         domain = domain[:-1]
     domain = domain.split(":")[0]
@@ -42,7 +42,7 @@ def validate_domain(domain: str) -> tuple[str, str]:
         return domain, None
     else:
         return domain, "E.g. example.com, sub.example.com, *.example.com, *.com or localhost"
-    
+
 
 def validate_project_name(name: str) -> tuple[str, str]:
     if re.match(r"^[a-zA-Z0-9-_]+$", name):
@@ -55,7 +55,10 @@ def validate_username(username: str) -> tuple[str, str]:
     if re.match(r"^[a-zA-Z0-9-_]+$", username):
         return username.lower(), None
     else:
-        return username, "Invalid username. Must be alphanumeric characters, hyphen or underscore."
+        return (
+            username,
+            "Invalid username. Must be alphanumeric characters, hyphen or underscore.",
+        )
 
 
 def calc_time(time: timedelta) -> str:
@@ -101,11 +104,11 @@ def created_at_display(self, obj=None):
     if obj.created_at:
         now = timezone.now()
         created_at = now - obj.created_at
-        return format_html(
-            '<span title="{}">{}</span>', obj.created_at, calc_time(created_at)
-        )
+        return format_html('<span title="{}">{}</span>', obj.created_at, calc_time(created_at))
     else:
         return "-"
+
+
 created_at_display.short_description = "Created At"
 
 
@@ -113,11 +116,11 @@ def updated_at_display(self, obj=None):
     if obj.updated_at:
         now = timezone.now()
         updated_at = now - obj.updated_at
-        return format_html(
-            '<span title="{}">{}</span>', obj.updated_at, calc_time(updated_at)
-        )
+        return format_html('<span title="{}">{}</span>', obj.updated_at, calc_time(updated_at))
     else:
         return "-"
+
+
 updated_at_display.short_description = "Updated At"
 
 
