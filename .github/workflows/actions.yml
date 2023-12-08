@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "*/*"
+
+jobs:
+
+  build:
+
+    runs-on: q2k
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build the Docker image
+      run: |
+        cp .env.example .env
+        docker build . --file Dockerfile --tag docker-image-ci:latest
+
+    - name: Test & check code style
+      run: docker run --rm docker-image-ci:latest /bin/sh -c "python manage.py test && flake8 --exclude=migrations ."
+
+    - name: Cleanup
+      run: docker rmi docker-image-ci:latest

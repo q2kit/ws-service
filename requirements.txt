@@ -18,6 +18,7 @@ Django==4.1.13
 django-extensions==3.2.3
 django-ipware==5.0.0
 django-redis==5.3.0
+flake8==6.1.0
 gunicorn==21.2.0
 h11==0.14.0
 hiredis==2.2.3
