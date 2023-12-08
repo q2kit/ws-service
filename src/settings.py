@@ -59,13 +59,13 @@ MIDDLEWARE = [
     "src.middleware.message.VerifyEmailMessageMiddleware",
 ]
 
-AUTH_USER_MODEL = 'src.User'
+AUTH_USER_MODEL = "src.User"
 AUTHENTICATION_BACKENDS = [
     "src.backends.EmailLoginBackend",
 ]
 
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/dashboard/"
 
 ROOT_URLCONF = "src.urls"
 
@@ -100,8 +100,9 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                (f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}") if REDIS_PASS else
-                (f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
+                (f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
+                if REDIS_PASS
+                else (f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
             ],
         },
     },
@@ -128,13 +129,12 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": (
-            f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}" if REDIS_PASS else
-            f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+            f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+            if REDIS_PASS
+            else f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
         ),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
-        },
-        "KEY_PREFIX": "ws-service"
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "ws-service",
     }
 }
 
@@ -202,7 +202,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "file",
             "filename": os.path.join(LOGGING_DIR, "ws-service.log"),
-            "maxBytes": 1024 * 1024 * 0.1, # 0.1 MB per file
+            "maxBytes": 1024 * 1024 * 0.1,  # 0.1 MB per file
             "backupCount": 5,
             "encoding": "utf8",
             "delay": False,

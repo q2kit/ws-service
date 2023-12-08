@@ -14,21 +14,23 @@ class VerifyEmailMessageMiddleware(MiddlewareMixin):
         if self.should_add_message(request):
             messages.warning(
                 request,
-                format_html(f"""
+                format_html(
+                    f"""
                     Please verify your email address before you can use the service.
                     <a href='{reverse('verify')}?next={request.path}'>Verify now</a>
-                """)
+                """
+                ),
             )
 
     def should_add_message(self, request):
         except_paths = [
-            reverse('signup'),
-            reverse('verify'),
-            reverse('dashboard:jsi18n'),
+            reverse("signup"),
+            reverse("verify"),
+            reverse("dashboard:jsi18n"),
         ]
         except_keywords = [
             # 'jsi18n',
-            'password_reset',
+            "password_reset",
         ]
         should = [request.user.is_authenticated and not request.user.verified]
         should.append(request.path not in except_paths)

@@ -55,12 +55,10 @@ class WSConsumer(AsyncWebsocketConsumer):
                 domain = "Unknown"
 
             if not await sync_to_async(project.check_domain_allowed)(domain):
-                logging.error(
-                    f"Domain: {domain} - Project: {self.project} - Not allowed"
-                )
+                logging.error(f"Domain: {domain} - Project: {self.project} - Not allowed")
                 await self.close()
                 return
-            
+
             payload = jwt.decode(token, project.secret_key, algorithms=["HS256"])
             if "id" not in payload:
                 await self.close()
@@ -79,7 +77,15 @@ class WSConsumer(AsyncWebsocketConsumer):
 
             ip = self.scope["client"][0]
             logging.info(
-                f"IP: {ip} - Domain: {domain} - Project: {self.project} - Client: {self.client_id} - Connected"
+                " - ".join(
+                    (
+                        f"IP: {ip}",
+                        f"Domain: {domain}",
+                        f"Project: {self.project}",
+                        f"Client: {self.client_id}",
+                        "Connected",
+                    )
+                )
             )
         except Exception as e:
             logging.error(e)
@@ -87,9 +93,7 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         try:
-            self.channel_layer.client_map[self.client_id].remove(
-                self.channel_name
-            )
+            self.channel_layer.client_map[self.client_id].remove(self.channel_name)
             self.channel_layer.group_discard(self.project, self.channel_name)
         except:
             pass

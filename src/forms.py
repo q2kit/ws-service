@@ -35,7 +35,7 @@ class RegistrationForm(forms.Form):
     )
 
     def clean_username(self):
-        username = self.cleaned_data.get('username')
+        username = self.cleaned_data.get("username")
         username, error = validate_username(username)
         if error:
             raise forms.ValidationError(
@@ -47,18 +47,18 @@ class RegistrationForm(forms.Form):
                 self.error_messages["username_exists"],
                 code="username_exists",
             )
-        
+
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        
+        email = self.cleaned_data.get("email")
+
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError(
                 self.error_messages["email_exists"],
                 code="email_exists",
             )
-        
+
         return email
 
     def clean_password2(self):
@@ -92,13 +92,12 @@ class DomainForm(ModelForm):
             "domain": forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
         }
 
-
     def clean_domain(self):
         domain = self.cleaned_data.get("domain")
         domain, error = validate_domain(domain)
         if error:
             self.add_error("domain", error)
-        
+
         return domain
 
 
@@ -155,21 +154,20 @@ class ProjectFormSuperUser(ModelForm):
             "name": forms.TextInput(attrs={"autofocus": True, "inputmode": "text"}),
         }
 
-
     def clean_name(self):
         name = self.cleaned_data.get("name")
         name, error = validate_project_name(name)
         if error:
             self.add_error("name", error)
         self.cleaned_data["name"] = name
-        
+
         return name
 
 
 class ProjectAddFormSuperUser(ProjectFormSuperUser):
     class Meta(ProjectFormSuperUser.Meta):
         fields = ("name", "description", "allow_any_domains", "owner")
-        
+
     owner = forms.ModelChoiceField(
         queryset=User.objects.all(),
         required=True,

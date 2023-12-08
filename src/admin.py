@@ -52,15 +52,8 @@ class DomainInline(admin.TabularInline):
 
 class ProjectAdmin(admin.ModelAdmin):
     class Media:
-        css = {
-            "all": (
-                "css/fontawesome.css",
-            )
-        }
-        js = (
-            "js/refresh_secret_key.js",
-            "js/fontawesome.js"
-        )
+        css = {"all": ("css/fontawesome.css",)}
+        js = ("js/refresh_secret_key.js", "js/fontawesome.js")
 
     list_select_related = ("owner",)
     ordering = ("-created_at",)
@@ -74,9 +67,9 @@ class ProjectAdmin(admin.ModelAdmin):
             return Project.objects.all()
         else:
             return Project.objects.filter(owner=request.user)
-        
+
     def save_model(self, request, obj, form, change):
-        if not change: # create
+        if not change:  # create
             if not obj.owner:
                 obj.owner = request.user
         obj.save()
@@ -86,7 +79,7 @@ class ProjectAdmin(admin.ModelAdmin):
             return ("name", "owner", "created_at", "updated_at")
         else:
             return ("name", "created_at", "updated_at")
-        
+
     def get_list_display(self, request):
         if request.user.is_superuser:
             return (
@@ -109,13 +102,13 @@ class ProjectAdmin(admin.ModelAdmin):
             return ("name", "owner__email", "owner__username")
         else:
             return ("name",)
-        
+
     def get_list_filter(self, request):
         if request.user.is_superuser:
             return ("owner",)
         else:
             return ()
-        
+
     def get_fields(self, request, obj=None):
         if request.user.is_superuser:
             if obj:
@@ -140,7 +133,7 @@ class ProjectAdmin(admin.ModelAdmin):
                 )
             else:
                 return ("name", "description", "allow_any_domains")
-            
+
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
             if obj:
@@ -161,7 +154,7 @@ class ProjectAdmin(admin.ModelAdmin):
                 )
             else:
                 return ("secret_key",)
-            
+
     def get_form(self, request, obj=None, **kwargs):
         if request.user.is_superuser:
             if obj:

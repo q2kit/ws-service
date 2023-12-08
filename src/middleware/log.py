@@ -34,5 +34,13 @@ class RequestLoggerMiddleware(MiddlewareMixin):
         ip, _ = get_client_ip(request)
 
         logging.error(
-            f"IP: {ip} - User: {request.user} - {request.method} - {request.get_full_path()} - {exception}"
+            " - ".join(
+                (
+                    f"IP: {ip}",
+                    f"User: {request.user}",
+                    f"{request.method}",
+                    f"{request.get_full_path()}",
+                    f"{exception}",
+                )
+            )
         )
