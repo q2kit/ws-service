@@ -30,7 +30,7 @@ docker pull q2kit/wss-backend:TAG
 #### 2.2. Create container:
 
 ```bash
-docker run --publish 18080:80 --network wss --name wss-backend -e CSRF_TRUSTED_ORIGINS="['http://localhost:18080']" q2kit/wss-backend:TAG
+docker run -d --publish 127.0.0.1:18080:80 --network wss --name wss-backend -e CSRF_TRUSTED_ORIGINS="['http://localhost:18080']" q2kit/wss-backend:TAG
 ```
 
 
