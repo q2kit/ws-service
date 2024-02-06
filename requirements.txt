@@ -12,7 +12,7 @@ channels-redis==3.4.0
 charset-normalizer==2.1.1
 click==8.1.7
 constantly==15.1.0
-cryptography==41.0.6
+cryptography==42.0.0
 daphne==3.0.2
 Django==4.1.13
 django-extensions==3.2.3
