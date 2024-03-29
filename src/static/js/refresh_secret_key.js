@@ -1,4 +1,4 @@
-var $$ = $;
+const $$ = $;
 
 $$(document).ready(function() {
     $$(".field-secret_key").find(".readonly").append(`<i
@@ -15,9 +15,14 @@ $$(document).ready(function() {
             }
             let project = $$("#id_name").val();
             let url = "/api/refresh_secret_key/" + project + "/";
+            let fd = new FormData();
+            fd.append("csrfmiddlewaretoken", $$("input[name=csrfmiddlewaretoken]").val());
             $$.ajax({
                 url: url,
                 type: "POST",
+                data: fd,
+                processData: false,
+                contentType: false,
                 success: function(data) {
                     location.reload();
                 },

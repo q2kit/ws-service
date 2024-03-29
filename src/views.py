@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib import messages
 from django.http import HttpResponse, Http404
-from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -33,7 +32,6 @@ def index(request):
     return redirect("dashboard:index")
 
 
-@csrf_exempt
 def refresh_secret_key(request, project):
     if request.method != "POST":
         return HttpResponse("NG", status=400)
