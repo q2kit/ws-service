@@ -23,7 +23,7 @@ gunicorn==21.2.0
 h11==0.14.0
 hiredis==2.2.3
 hyperlink==21.0.0
-idna==3.4
+idna==3.7
 incremental==22.10.0
 msgpack==1.0.5
 mypy-extensions==1.0.0
